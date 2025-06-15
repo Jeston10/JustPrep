@@ -101,29 +101,40 @@ export async function getCurrentUser(): Promise<User | null> {
   const cookieStore = await cookies();
 
   const sessionCookie = cookieStore.get("session")?.value;
-  if (!sessionCookie) return null;
+  console.log("🔍 [getCurrentUser] Session Cookie:", sessionCookie);
+
+  if (!sessionCookie) {
+    console.log("❌ No session cookie found in request headers.");
+    return null;
+  }
 
   try {
     const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+    console.log("✅ Session verified. Decoded claims:", decodedClaims);
 
-    // get user info from db
     const userRecord = await db
       .collection("users")
       .doc(decodedClaims.uid)
       .get();
-    if (!userRecord.exists) return null;
+
+    if (!userRecord.exists) {
+      console.log("❌ User record not found in Firestore.");
+      return null;
+    }
+
+    const userData = userRecord.data();
+    console.log("✅ User data from Firestore:", userData);
 
     return {
-      ...userRecord.data(),
+      ...userData,
       id: userRecord.id,
     } as User;
   } catch (error) {
-    console.log(error);
-
-    // Invalid or expired session
+    console.error("❌ Error verifying session cookie:", error);
     return null;
   }
 }
+
 
 // Check if user is authenticated
 export async function isAuthenticated() {
