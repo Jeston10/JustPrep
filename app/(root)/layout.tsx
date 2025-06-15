@@ -1,19 +1,19 @@
-import { ReactNode } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { isAuthenticated } from '@/lib/actions/auth.action'
-import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
+import { ReactNode } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { isAuthenticated } from '@/lib/actions/auth.action';
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 
 const Rootlayout = async ({ children }: { children: ReactNode }) => {
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') || ''; // fallback to empty if missing
+  const referer = (await headers()).get('referer') || '';
 
+  // If user is not authenticated and NOT already on /sign-in
   const isUserAuthenticated = await isAuthenticated();
 
-  // Skip auth redirect on public routes
-  const publicRoutes = ['/sign-in', '/sign-up']; // add more as needed
-  if (!isUserAuthenticated && !publicRoutes.includes(pathname)) {
+  const isSignInPage = referer.includes('/sign-in'); // basic check
+
+  if (!isUserAuthenticated && !isSignInPage) {
     redirect('/sign-in');
   }
 
