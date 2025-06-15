@@ -6,14 +6,15 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
 const Rootlayout = async ({ children }: { children: ReactNode }) => {
-  const referer = (await headers()).get('referer') || '';
+  const headersList = await headers();
 
-  // If user is not authenticated and NOT already on /sign-in
+  const currentPath = headersList.get('x-invoke-path') || headersList.get('x-next-url') || ''; // fallback
   const isUserAuthenticated = await isAuthenticated();
 
-  const isSignInPage = referer.includes('/sign-in'); // basic check
+  const publicRoutes = ['/sign-in', '/sign-up'];
+  const isPublic = publicRoutes.some(route => currentPath.includes(route));
 
-  if (!isUserAuthenticated && !isSignInPage) {
+  if (!isUserAuthenticated && !isPublic) {
     redirect('/sign-in');
   }
 
