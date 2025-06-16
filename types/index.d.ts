@@ -50,7 +50,7 @@ interface InterviewCardProps {
 interface AgentProps {
   userName: string;
   userId?: string;
-  interviewId?: string;
+  id?: string;
   feedbackId?: string;
   type: "generate" | "interview";
   questions?: string[];
