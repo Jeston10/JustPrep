@@ -115,35 +115,62 @@ const Agent = ({
   }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
 
   const handleCall = async () => {
-    setCallStatus(CallStatus.CONNECTING);
+  setCallStatus(CallStatus.CONNECTING);
 
-    if (type === "generate") {
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+  if (type === "generate") {
+    const workflowId = process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID;
+    if (!workflowId) {
+      console.error('VAPI Workflow ID is missing!');
+      setCallStatus(CallStatus.FINISHED);
+      return;
+    }
+    try {
+      await vapi.start(workflowId, {
         variableValues: {
           username: userName,
           userid: userId,
         },
       });
-    } else {
-      let formattedQuestions = "";
-      if (questions) {
-        formattedQuestions = questions
-          .map((question) => `- ${question}`)
-          .join("\n");
+    } catch (error) {
+      if (typeof error === 'object') {
+        console.error('Vapi.start failed:', JSON.stringify(error));
+      } else {
+        console.error('Vapi.start failed:', error);
       }
-
+      setCallStatus(CallStatus.FINISHED);
+    }
+  } else {
+    let formattedQuestions = "";
+    if (questions) {
+      formattedQuestions = questions
+        .map((question) => `- ${question}`)
+        .join("\n");
+    }
+    if (!interviewer) {
+      console.error('Interviewer is missing!');
+      setCallStatus(CallStatus.FINISHED);
+      return;
+    }
+    try {
       await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
         },
       });
+    } catch (error) {
+      if (typeof error === 'object') {
+        console.error('Vapi.start failed:', JSON.stringify(error));
+      } else {
+        console.error('Vapi.start failed:', error);
+      }
+      setCallStatus(CallStatus.FINISHED);
     }
-  };
+  }
+};
 
-  const handleDisconnect = () => {
-    setCallStatus(CallStatus.FINISHED);
-    vapi.stop();
-  };
+    function handleDisconnect(): void {
+        throw new Error("Function not implemented.");
+    }
 
   return (
     <>
