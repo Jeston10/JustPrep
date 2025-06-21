@@ -11,7 +11,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { auth } from "@/firebase/client"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
+import { FirebaseError } from "firebase/app"
 import { signIn, signUp } from "@/lib/actions/auth.action"
+import { useState } from "react"
 
 const authFormSchema = (type : FormType) => { 
   return z.object({
@@ -23,6 +25,7 @@ const authFormSchema = (type : FormType) => {
 
 const AuthForm = ({type}:{type: FormType}) => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,8 +35,36 @@ const AuthForm = ({type}:{type: FormType}) => {
       password: "",
     },
   })
+
+  const getErrorMessage = (error: FirebaseError) => {
+    switch (error.code) {
+      case 'auth/too-many-requests':
+        return 'Too many failed attempts. Please wait a few minutes before trying again.';
+      case 'auth/user-not-found':
+        return 'No account found with this email address.';
+      case 'auth/wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'auth/invalid-email':
+        return 'Invalid email address.';
+      case 'auth/weak-password':
+        return 'Password should be at least 6 characters long.';
+      case 'auth/email-already-in-use':
+        return 'An account with this email already exists.';
+      case 'auth/network-request-failed':
+        return 'Network error. Please check your internet connection.';
+      case 'auth/user-disabled':
+        return 'This account has been disabled.';
+      case 'auth/operation-not-allowed':
+        return 'Email/password sign in is not enabled.';
+      default:
+        return 'An error occurred. Please try again.';
+    }
+  }
  
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (isLoading) return; // Prevent multiple submissions
+    
+    setIsLoading(true);
     try {
       if(type === 'sign-up'){
         const { name, email, password } = values;
@@ -57,7 +88,7 @@ const AuthForm = ({type}:{type: FormType}) => {
 
         const userCredentials = await signInWithEmailAndPassword(auth, email, password);
 
-        const idToken =await userCredentials.user.getIdToken();
+        const idToken = await userCredentials.user.getIdToken();
 
         if(!idToken){
             toast.error('Failed to sign in. Please try again.');
@@ -73,9 +104,16 @@ const AuthForm = ({type}:{type: FormType}) => {
       }
     } catch(error) {
       console.log(error);
-      toast.error(`There was an error :${error}`)
+      
+      if (error instanceof FirebaseError) {
+        const errorMessage = getErrorMessage(error);
+        toast.error(errorMessage);
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
     }
-    console.log(values)
   }
 
   const isSignIn = type === "sign-in";
@@ -111,8 +149,8 @@ const AuthForm = ({type}:{type: FormType}) => {
             placeholder="Enter your Password"
             type="password"
           />
-          <Button className="btn" type="submit">
-            {isSignIn ? 'Sign in' : 'Create an account'}
+          <Button className="btn" type="submit" disabled={isLoading}>
+            {isLoading ? 'Please wait...' : (isSignIn ? 'Sign in' : 'Create an account')}
           </Button>
         </form>
         <p className="text-center">
