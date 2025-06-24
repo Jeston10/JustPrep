@@ -14,6 +14,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "fire
 import { FirebaseError } from "firebase/app"
 import { signIn, signUp } from "@/lib/actions/auth.action"
 import { useState } from "react"
+import { signOut } from "firebase/auth"
 
 const authFormSchema = (type : FormType) => { 
   return z.object({
