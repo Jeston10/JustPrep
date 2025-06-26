@@ -7,6 +7,7 @@ import { headers } from 'next/headers';
 import SettingsMenu from '@/components/SettingsMenu';
 import { FiHome, FiUser } from 'react-icons/fi';
 import DynamicQuote from '@/components/DynamicQuote';
+import AIChatbot from '@/components/AIChatbot';
 
 const PUBLIC_ROUTES = ['/sign-in', '/sign-up'];
 
@@ -60,6 +61,7 @@ const Rootlayout = async ({children}: {children:ReactNode}) => {
         <span>Contact: <a href="mailto:sjestonsingh@gmail.com" className="underline hover:text-primary-100">sjestonsingh@gmail.com</a></span>
         <span>Created by <b>S.Jeston Singh</b></span>
       </footer>
+      <AIChatbot />
     </div>
   );
 }
