@@ -92,6 +92,28 @@ const Feedback = async ({ params }: RouteParams) => {
         </ul>
       </div>
 
+      {/* Links to Practice Section */}
+      <div className="flex flex-col gap-3 mt-6 p-4 rounded-2xl bg-neutral-900 border border-green-600">
+        <h3 className="text-lg font-bold text-green-400 mb-2">Links to Practice</h3>
+        <ul className="list-disc list-inside space-y-1">
+          <li>
+            <a href="https://www.coursera.org/learn/wharton-communication-skills" target="_blank" rel="noopener noreferrer" className="text-green-300 underline hover:text-green-400">Communication Skills</a>
+          </li>
+          <li>
+            <a href="https://www.interviewbit.com/technical-interview-questions/" target="_blank" rel="noopener noreferrer" className="text-green-300 underline hover:text-green-400">Technical Knowledge</a>
+          </li>
+          <li>
+            <a href="https://leetcode.com/problemset/all/" target="_blank" rel="noopener noreferrer" className="text-green-300 underline hover:text-green-400">Problem Solving</a>
+          </li>
+          <li>
+            <a href="https://www.indeed.com/career-advice/interviewing/cultural-fit-interview-questions" target="_blank" rel="noopener noreferrer" className="text-green-300 underline hover:text-green-400">Cultural Fit</a>
+          </li>
+          <li>
+            <a href="https://www.topinterview.com/interview-advice/confidence-in-job-interviews" target="_blank" rel="noopener noreferrer" className="text-green-300 underline hover:text-green-400">Confidence and Clarity</a>
+          </li>
+        </ul>
+      </div>
+
       <div className="buttons">
         <Button className="btn-secondary flex-1">
           <Link href="/" className="flex w-full justify-center">

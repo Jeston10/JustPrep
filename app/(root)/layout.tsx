@@ -8,6 +8,8 @@ import SettingsMenu from '@/components/SettingsMenu';
 import { FiHome, FiUser } from 'react-icons/fi';
 import DynamicQuote from '@/components/DynamicQuote';
 import AIChatbot from '@/components/AIChatbot';
+import DynamicCareerQuote from '@/components/DynamicCareerQuote';
+import { FaLinkedin, FaInstagram, FaGithub } from 'react-icons/fa';
 
 const PUBLIC_ROUTES = ['/sign-in', '/sign-up'];
 
@@ -27,15 +29,16 @@ const Rootlayout = async ({children}: {children:ReactNode}) => {
   // Restore to simple layout
   return (
     <div className="root-layout">
-      <nav className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <nav className="flex flex-col items-center mb-8">
+        <div className="flex items-center gap-4 mb-2">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.svg" alt="logo" height={32} width={38}/>
             <h2 className="text-primary-100">JustPrep</h2>
           </Link>
           <DynamicQuote />
         </div>
-        <div className="flex gap-2 items-center">
+        <DynamicCareerQuote />
+        <div className="flex gap-2 items-center mt-2">
           <Link
             href="/"
             className="flex items-center gap-2 font-bold text-primary-100 px-4 py-2 rounded-full hover:bg-primary-200/20 transition"
@@ -60,6 +63,17 @@ const Rootlayout = async ({children}: {children:ReactNode}) => {
         <span>&copy; {new Date().getFullYear()} JustPrep™. All rights reserved.</span>
         <span>Contact: <a href="mailto:sjestonsingh@gmail.com" className="underline hover:text-primary-100">sjestonsingh@gmail.com</a></span>
         <span>Created by <b>S.Jeston Singh</b></span>
+        <div className="flex gap-4 mt-3">
+          <a href="https://www.linkedin.com/in/jeston-singh/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-white hover:text-purple-400 text-2xl transition-colors">
+            <FaLinkedin />
+          </a>
+          <a href="https://www.instagram.com/_just_shut_da_fuk_up_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-white hover:text-purple-400 text-2xl transition-colors">
+            <FaInstagram />
+          </a>
+          <a href="https://github.com/Jeston10" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-white hover:text-purple-400 text-2xl transition-colors">
+            <FaGithub />
+          </a>
+        </div>
       </footer>
       <AIChatbot />
     </div>

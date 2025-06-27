@@ -123,3 +123,22 @@ export async function getInterviewsByUserId(
     ...doc.data(),
   })) as Interview[];
 }
+
+// Get feedback for the user for the past 5 days (for analytics graph)
+export async function getUserFeedbackForPast5Days(userId: string) {
+  const now = new Date();
+  const fiveDaysAgo = new Date(now);
+  fiveDaysAgo.setDate(now.getDate() - 4); // includes today
+
+  const feedbacks = await db
+    .collection("feedback")
+    .where("userId", "==", userId)
+    .where("createdAt", ">=", fiveDaysAgo.toISOString())
+    .orderBy("createdAt", "asc")
+    .get();
+
+  return feedbacks.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Feedback[];
+}
