@@ -36,6 +36,11 @@ interface User {
   name: string;
   email: string;
   id: string;
+  dailyLogins?: Record<string, boolean>;
+  lastLoginDate?: string;
+  loginStreak?: number;
+  description?: string;
+  photoURL?: string;
 }
 
 interface InterviewCardProps {

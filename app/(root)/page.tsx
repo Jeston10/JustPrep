@@ -15,6 +15,7 @@ import {
 import HomeAnalyticsSection from "@/components/HomeAnalyticsSection";
 import HighPayingJobsSection from "@/components/HighPayingJobsSection";
 import NewsSection from "@/components/NewsSection";
+import DailyLoginStar from "@/components/DailyLoginStar";
 
 async function Home() {
   const user = await getCurrentUser();
@@ -53,8 +54,8 @@ async function Home() {
               <Image
                 src="/robot.png"
                 alt="robo-dude"
-                width={400}
-                height={400}
+                width={520}
+                height={800}
                 className="rounded-3xl shadow-2xl border-4 border-primary-200/30 animate-fadeIn"
                 priority
               />
@@ -127,6 +128,7 @@ async function Home() {
             <HomeAnalyticsSection feedbacks={feedbacks || []} />
             <HighPayingJobsSection />
             <NewsSection />
+            <DailyLoginStar userId={user?.id!} />
           </div>
         </aside>
       </div>

@@ -37,3 +37,13 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 # JustPrep_Ai_interview
 JustPrep Ai Interviewer gets you ready with your interview anytime, anywhere just open, ask and Improve your success rate for cracking any job interview.
+
+## Features
+
+### Daily Login Star
+- **Daily Login Tracking**: The app tracks your daily login activity and displays a star icon that lights up when you sign in each day
+- **Login Streak**: Shows your current consecutive login streak to encourage consistent practice
+- **Visual Feedback**: The star icon animates and glows when you've logged in today, providing immediate visual feedback
+- **Motivational Messages**: Displays encouraging messages based on your streak length to keep you motivated
+
+The daily login star appears in the right sidebar below the news section, providing a gamified element to encourage regular practice and engagement with the platform.

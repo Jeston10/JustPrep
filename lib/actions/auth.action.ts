@@ -81,6 +81,9 @@ export async function signIn(params: SignInParams) {
       };
 
     await setSessionCookie(idToken);
+    
+    // Track daily login
+    await recordDailyLogin(userRecord.uid);
   } catch {
     return {
       success: false,
@@ -139,5 +142,88 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function isAuthenticated() {
   const user = await getCurrentUser();
   return !!user;
+}
+
+// Record daily login for streak tracking
+export async function recordDailyLogin(userId: string) {
+  try {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const userRef = db.collection("users").doc(userId);
+    
+    // Get current user data
+    const userDoc = await userRef.get();
+    const userData = userDoc.data();
+    
+    // Initialize or update daily login tracking
+    const dailyLogins = userData?.dailyLogins || {};
+    const lastLoginDate = userData?.lastLoginDate;
+    
+    // Only record if it's a new day
+    if (lastLoginDate !== today) {
+      dailyLogins[today] = true;
+      
+      // Calculate new streak
+      const newStreak = calculateLoginStreak(dailyLogins, today);
+      
+      await userRef.update({
+        dailyLogins,
+        lastLoginDate: today,
+        loginStreak: newStreak
+      });
+      
+      console.log(`✅ Daily login recorded for user ${userId}. New streak: ${newStreak} days`);
+    } else {
+      console.log(`ℹ️ User ${userId} already logged in today`);
+    }
+  } catch (error) {
+    console.error("Error recording daily login:", error);
+  }
+}
+
+// Calculate current login streak
+function calculateLoginStreak(dailyLogins: Record<string, boolean>, today: string): number {
+  let streak = 0;
+  let currentDate = new Date(today);
+  
+  // Check consecutive days backwards from today
+  while (true) {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    if (dailyLogins[dateStr]) {
+      streak++;
+      // Move to previous day
+      currentDate.setDate(currentDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  
+  return streak;
+}
+
+// Check if user has logged in today
+export async function hasLoggedInToday(userId: string): Promise<boolean> {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+    
+    return userData?.lastLoginDate === today;
+  } catch (error) {
+    console.error("Error checking daily login:", error);
+    return false;
+  }
+}
+
+// Get user's login streak
+export async function getUserLoginStreak(userId: string): Promise<number> {
+  try {
+    const userDoc = await db.collection("users").doc(userId).get();
+    const userData = userDoc.data();
+    
+    return userData?.loginStreak || 0;
+  } catch (error) {
+    console.error("Error getting login streak:", error);
+    return 0;
+  }
 }
 
