@@ -1,10 +1,12 @@
 import { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { isAuthenticated } from '@/lib/actions/auth.action'
+import { isAuthenticated, getCurrentUser, hasLoggedInToday, getUserLoginStreak } from '@/lib/actions/auth.action'
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import SettingsMenu from '@/components/SettingsMenu';
+import DailyLoginStar from '@/components/DailyLoginStar';
+import LiveDateTime from '@/components/LiveDateTime';
 import { FiHome, FiUser } from 'react-icons/fi';
 import DynamicQuote from '@/components/DynamicQuote';
 import AIChatbot from '@/components/AIChatbot';
@@ -26,15 +28,44 @@ const Rootlayout = async ({children}: {children:ReactNode}) => {
     }
   }
 
+  // Get user data for daily login star (only for authenticated routes)
+  let user = null;
+  let initialHasLoggedInToday = false;
+  let initialStreak = 0;
+  
+  if (!PUBLIC_ROUTES.includes(currentPath)) {
+    try {
+      user = await getCurrentUser();
+      if (user?.id) {
+        [initialHasLoggedInToday, initialStreak] = await Promise.all([
+          hasLoggedInToday(user.id),
+          getUserLoginStreak(user.id)
+        ]);
+      }
+    } catch (error) {
+      console.error("Error getting user data for daily login star:", error);
+    }
+  }
+
   // Restore to simple layout
   return (
     <div className="root-layout">
       <nav className="flex flex-col items-center mb-8">
-        <div className="flex items-center gap-4 mb-2">
+        <div className="flex items-center gap-4 mb-2 w-full">
+          {/* Live DateTime at the very left */}
+          <LiveDateTime />
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.svg" alt="logo" height={32} width={38}/>
             <h2 className="text-primary-100">JustPrep</h2>
           </Link>
+          {/* Daily Login Star next to JustPrep */}
+          {user && (
+            <DailyLoginStar 
+              userId={user.id} 
+              initialHasLoggedInToday={initialHasLoggedInToday}
+              initialStreak={initialStreak}
+            />
+          )}
           <DynamicQuote />
         </div>
         <DynamicCareerQuote />

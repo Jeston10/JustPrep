@@ -204,12 +204,23 @@ function calculateLoginStreak(dailyLogins: Record<string, boolean>, today: strin
 export async function hasLoggedInToday(userId: string): Promise<boolean> {
   try {
     const today = new Date().toISOString().split('T')[0];
+    console.log("🔍 [hasLoggedInToday] Checking for user:", userId, "on date:", today);
+    
     const userDoc = await db.collection("users").doc(userId).get();
     const userData = userDoc.data();
     
-    return userData?.lastLoginDate === today;
+    console.log("📊 [hasLoggedInToday] User data:", {
+      lastLoginDate: userData?.lastLoginDate,
+      loginStreak: userData?.loginStreak,
+      hasDailyLogins: !!userData?.dailyLogins
+    });
+    
+    const hasLoggedIn = userData?.lastLoginDate === today;
+    console.log("✅ [hasLoggedInToday] Result:", hasLoggedIn);
+    
+    return hasLoggedIn;
   } catch (error) {
-    console.error("Error checking daily login:", error);
+    console.error("❌ [hasLoggedInToday] Error:", error);
     return false;
   }
 }

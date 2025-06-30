@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import InterviewCard from "@/components/InterviewCard";
 import { redirect } from "next/navigation";
 
-import { getCurrentUser } from "@/lib/actions/auth.action";
+import { getCurrentUser, recordDailyLogin } from "@/lib/actions/auth.action";
 import {
   getInterviewsByUserId,
   getLatestInterviews,
@@ -15,13 +15,15 @@ import {
 import HomeAnalyticsSection from "@/components/HomeAnalyticsSection";
 import HighPayingJobsSection from "@/components/HighPayingJobsSection";
 import NewsSection from "@/components/NewsSection";
-import DailyLoginStar from "@/components/DailyLoginStar";
 
 async function Home() {
   const user = await getCurrentUser();
   if (!user) {
     redirect('/sign-in');
   }
+
+  // Record daily login when user visits the home page
+  await recordDailyLogin(user.id);
 
   const [userInterviews, allInterview, feedbacks] = await Promise.all([
     getInterviewsByUserId(user?.id!),
@@ -128,7 +130,6 @@ async function Home() {
             <HomeAnalyticsSection feedbacks={feedbacks || []} />
             <HighPayingJobsSection />
             <NewsSection />
-            <DailyLoginStar userId={user?.id!} />
           </div>
         </aside>
       </div>
