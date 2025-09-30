@@ -15,8 +15,13 @@ import {
 import HomeAnalyticsSection from "@/components/HomeAnalyticsSection";
 import HighPayingJobsSection from "@/components/HighPayingJobsSection";
 import NewsSection from "@/components/NewsSection";
+import AllInterviewsSection from "@/components/AllInterviewsSection";
 
-async function Home() {
+interface HomeProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+async function Home({ searchParams }: HomeProps) {
   const user = await getCurrentUser();
   if (!user) {
     redirect('/sign-in');
@@ -31,8 +36,20 @@ async function Home() {
     getUserFeedbackForPast5Days(user?.id!),
   ]);
 
-  const hasPastInterviews = userInterviews?.length! > 0;
-  const hasUpcomingInterviews = allInterview?.length! > 0;
+  // Combine both interview arrays and remove duplicates
+  const combinedInterviews = [...(userInterviews || []), ...(allInterview || [])];
+  const uniqueInterviews = combinedInterviews.filter((interview, index, self) => 
+    index === self.findIndex(i => i.id === interview.id)
+  );
+
+  // Pagination logic
+  const params = await searchParams;
+  const currentPage = Math.max(1, parseInt(params.page || '1', 10));
+  const itemsPerPage = 6;
+  const totalPages = Math.max(1, Math.ceil(uniqueInterviews.length / itemsPerPage));
+  
+  // Ensure currentPage doesn't exceed totalPages
+  const validCurrentPage = Math.min(currentPage, totalPages);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-primary-200/40 via-white to-primary-100/60 dark:from-dark-200 dark:via-dark-100 dark:to-dark-300 pb-24">
@@ -69,60 +86,14 @@ async function Home() {
             <div className="h-1 w-32 bg-gradient-to-r from-primary-200 via-primary-100 to-primary-200 rounded-full opacity-60" />
           </div>
 
-          {/* Your Interviews Section */}
-          <section className="flex flex-col gap-6 mt-8 max-w-5xl mx-auto animate-fadeIn">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-2 h-8 bg-primary-200 rounded-full" />
-              <h2 className="text-2xl md:text-3xl font-bold text-primary-100 tracking-tight">Your Interviews</h2>
-            </div>
-            <div className="interviews-section">
-              {hasPastInterviews ? (
-                userInterviews?.map((interview) => (
-                  <InterviewCard
-                    key={interview.id}
-                    userId={user?.id}
-                    interviewId={interview.id}
-                    role={interview.role}
-                    type={interview.type}
-                    techstack={interview.techstack}
-                    createdAt={interview.createdAt}
-                  />
-                ))
-              ) : (
-                <p className="text-lg text-light-400">You haven&apos;t taken any interviews yet</p>
-              )}
-            </div>
-          </section>
-
-          {/* Divider */}
-          <div className="w-full flex justify-center my-12">
-            <div className="h-1 w-32 bg-gradient-to-r from-primary-200 via-primary-100 to-primary-200 rounded-full opacity-60" />
-          </div>
-
-          {/* Take Interviews Section */}
-          <section className="flex flex-col gap-6 mt-8 max-w-5xl mx-auto animate-fadeIn">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-2 h-8 bg-primary-200 rounded-full" />
-              <h2 className="text-2xl md:text-3xl font-bold text-primary-100 tracking-tight">Take Interviews</h2>
-            </div>
-            <div className="interviews-section">
-              {hasUpcomingInterviews ? (
-                allInterview?.map((interview) => (
-                  <InterviewCard
-                    key={interview.id}
-                    userId={user?.id}
-                    interviewId={interview.id}
-                    role={interview.role}
-                    type={interview.type}
-                    techstack={interview.techstack}
-                    createdAt={interview.createdAt}
-                  />
-                ))
-              ) : (
-                <p className="text-lg text-light-400">There are no interviews available</p>
-              )}
-            </div>
-          </section>
+          {/* All Interviews Section */}
+          <AllInterviewsSection
+            userInterviews={userInterviews || []}
+            allInterviews={allInterview || []}
+            userId={user?.id!}
+            currentPage={validCurrentPage}
+            totalPages={totalPages}
+          />
         </div>
         {/* Right Analytics Section */}
         <aside className="w-full md:w-96 flex-shrink-0 md:mt-[2.5rem] md:h-full flex md:flex-col">

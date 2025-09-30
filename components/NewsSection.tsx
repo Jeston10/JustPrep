@@ -21,13 +21,14 @@ export default function NewsSection() {
       setLoading(true);
       setError(null);
       try {
-        const apiKey = process.env.NEXT_PUBLIC_GNEWS_API_KEY;
-        const res = await fetch(
-          `https://gnews.io/api/v4/top-headlines?category=technology&lang=en&max=28&apikey=${apiKey}`
-        );
+        const res = await fetch('/api/news');
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         setArticles(data.articles || []);
       } catch (err) {
+        console.error('News fetch error:', err);
         setError("Failed to fetch news. Please try again later.");
       } finally {
         setLoading(false);

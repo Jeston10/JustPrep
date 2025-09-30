@@ -8,7 +8,6 @@ import SettingsMenu from '@/components/SettingsMenu';
 import DailyLoginStar from '@/components/DailyLoginStar';
 import LiveDateTime from '@/components/LiveDateTime';
 import { FiHome, FiUser } from 'react-icons/fi';
-import DynamicQuote from '@/components/DynamicQuote';
 import AIChatbot from '@/components/AIChatbot';
 import DynamicCareerQuote from '@/components/DynamicCareerQuote';
 import { FaLinkedin, FaInstagram, FaGithub } from 'react-icons/fa';
@@ -66,9 +65,8 @@ const Rootlayout = async ({children}: {children:ReactNode}) => {
               initialStreak={initialStreak}
             />
           )}
-          <DynamicQuote />
+          <DynamicCareerQuote />
         </div>
-        <DynamicCareerQuote />
         <div className="flex gap-2 items-center mt-2">
           <Link
             href="/"

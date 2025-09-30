@@ -1,8 +1,8 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { FaStar, FaRegStar } from 'react-icons/fa';
+import { FaStar, FaRegStar, FaLightbulb, FaBriefcase } from 'react-icons/fa';
 
 export default function ProfileClient({ user, averageScore }: { user: any, averageScore?: number | null }) {
   const [description, setDescription] = useState(user?.description || '');
@@ -69,7 +69,7 @@ export default function ProfileClient({ user, averageScore }: { user: any, avera
             )
           )}
         </div>
-        {averageScore !== null && (
+        {averageScore !== null && averageScore !== undefined && (
           <span className="text-sm text-gray-500 mt-1">Avg. Score: {averageScore.toFixed(1)} / 100</span>
         )}
       </div>
