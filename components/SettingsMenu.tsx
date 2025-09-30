@@ -13,10 +13,25 @@ export default function SettingsMenu() {
 
   const handleLogout = async () => {
     try {
+      // Sign out from Firebase client
       await signOut(auth);
-      router.push('/sign-in');
-      toast.success('Logged out successfully.');
+      
+      // Call server-side signOut to clear session cookie
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        router.push('/sign-in');
+        toast.success('Logged out successfully.');
+      } else {
+        throw new Error('Failed to clear session');
+      }
     } catch (error) {
+      console.error('Logout error:', error);
       toast.error('Failed to log out.');
     }
   };
