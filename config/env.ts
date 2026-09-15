@@ -17,7 +17,7 @@ export const env = createEnv({
 
     // Firebase Admin (service account). Private key is stored single-line with \n escapes.
     FIREBASE_PROJECT_ID: nonEmpty,
-    FIREBASE_CLIENT_EMAIL: z.string().trim().email(),
+    FIREBASE_CLIENT_EMAIL: z.email().trim(),
     FIREBASE_PRIVATE_KEY: nonEmpty.transform((key) => key.replace(/\\n/g, "\n")),
 
     // LLM (Google AI Studio free tier). Read explicitly and passed to the provider — the SDK's
@@ -36,7 +36,7 @@ export const env = createEnv({
     NEXT_PUBLIC_VAPI_WEB_TOKEN: nonEmpty,
     NEXT_PUBLIC_VAPI_WORKFLOW_ID: nonEmpty,
 
-    NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+    NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
   },
 
   // Next.js inlines NEXT_PUBLIC_* at build time only when referenced literally, so each client
