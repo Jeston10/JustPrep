@@ -9,12 +9,12 @@ import DisplayTechIcons from "./DisplayTechIcons";
 import { Button } from "./ui/button";
 
 interface InterviewCardProps {
-  interviewId?: string;
-  userId?: string;
+  interviewId?: string | undefined;
+  userId?: string | undefined;
   role: string;
   type: string;
   techstack: string[];
-  createdAt?: string;
+  createdAt?: string | undefined;
 }
 
 const InterviewCard = async ({

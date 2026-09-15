@@ -27,9 +27,9 @@ export interface AgentProps {
   userName: string;
   userId: string;
   type: "generate" | "interview";
-  interviewId?: string;
-  feedbackId?: string;
-  questions?: string[];
+  interviewId?: string | undefined;
+  feedbackId?: string | undefined;
+  questions?: string[] | undefined;
 }
 
 interface Message {
@@ -105,9 +105,8 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
   }, []);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      setLastMessage(messages[messages.length - 1].content);
-    }
+    const latest = messages.at(-1);
+    if (latest) setLastMessage(latest.content);
 
     const handleGenerateFeedback = async (
       transcript: SavedMessage[],
