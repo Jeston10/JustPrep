@@ -1,9 +1,14 @@
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
+
+import { env } from "@/config/env";
 
 import { db } from "@/firebase/admin";
 
 import { getRandomInterviewCover } from "@/lib/utils";
+
+// Provider factory moves to server/llm in P2.3.
+const google = createGoogleGenerativeAI({ apiKey: env.GEMINI_API_KEY });
 
 export function GET() {
   return Response.json({ success: true, data: "Thank You!" }, { status: 200 });

@@ -2,6 +2,8 @@
 
 import { cookies } from "next/headers";
 
+import { env } from "@/config/env";
+
 import { auth, db } from "@/firebase/admin";
 
 // Session duration (1 week)
@@ -28,7 +30,7 @@ export async function setSessionCookie(idToken: string) {
   cookieStore.set("session", sessionCookie, {
     maxAge: SESSION_DURATION,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: env.NODE_ENV === "production",
     path: "/",
     sameSite: "lax",
   });

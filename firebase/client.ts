@@ -1,19 +1,17 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp, getApp, getApps } from "firebase/app";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
 
+import { env } from "@/config/env";
+
+// Browser-side Firebase: Auth only. Firestore is never accessed from the client (SECURITY §2.7).
+// Moves to lib/firebase-client.ts in P2.4.
 const firebaseConfig = {
-  apiKey: "AIzaSyCPtDlpjjFxPkiLkpPR6pWZw2a8IS2N_lU",
-  authDomain: "justprep-12b9c.firebaseapp.com",
-  projectId: "justprep-12b9c",
-  storageBucket: "justprep-12b9c.firebasestorage.app",
-  messagingSenderId: "349545385169",
-  appId: "1:349545385169:web:02eb4cc9df5b8538a0c9f0",
-  measurementId: "G-9JPBH1JN89",
+  apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = !getApps.length ? initializeApp(firebaseConfig) : getApp();
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
 export const auth = getAuth(app);
-export const db = getFirestore(app);
