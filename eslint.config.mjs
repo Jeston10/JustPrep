@@ -8,11 +8,10 @@
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { FlatCompat } from "@eslint/eslintrc";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import tseslint from "typescript-eslint";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const compat = new FlatCompat({ baseDirectory: __dirname });
 
 /** Vendor SDKs that may only be imported from server/* adapters (GUARDRAILS C3). */
 const VENDOR_SDKS = [
@@ -48,8 +47,9 @@ export default tseslint.config(
     ],
   },
 
-  // Next.js core-web-vitals registers: @next/next, react, react-hooks, import, jsx-a11y.
-  ...compat.extends("next/core-web-vitals"),
+  // Next.js core-web-vitals (native flat config since v16) registers: @next/next, react,
+  // react-hooks, import, jsx-a11y, and @typescript-eslint.
+  ...nextCoreWebVitals,
 
   // TypeScript: strict + type-aware.
   ...tseslint.configs.strictTypeChecked,

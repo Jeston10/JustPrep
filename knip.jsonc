@@ -1,0 +1,5 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  // Added in P0.5 (vitest.config.ts, playwright.config.ts); remove this entry in that PR.
+  "ignoreBinaries": ["vitest", "playwright"],
+}

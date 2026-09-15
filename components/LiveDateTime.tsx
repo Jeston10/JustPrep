@@ -1,26 +1,27 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+// Ticks once per second; the server snapshot is null so SSR and hydration match.
+// Widget is deleted in P3.5 (GUARDRAILS D3).
+const subscribe = (onChange: () => void) => {
+  const interval = setInterval(onChange, 1000);
+  return () => {
+    clearInterval(interval);
+  };
+};
+const getSnapshot = () => Math.floor(Date.now() / 1000);
+const getServerSnapshot = () => null;
 
 export default function LiveDateTime() {
-  const [now, setNow] = useState<Date | null>(null);
+  const seconds = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  useEffect(() => {
-    setNow(new Date());
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  if (!now) {
+  if (seconds === null) {
     // Placeholder to avoid hydration mismatch
     return <div className="min-w-[180px] rounded-lg px-3 py-1" />;
   }
 
   // Format: e.g. Mon, 10 Jun 2024, 14:23:45
-  const formatted = now.toLocaleString("en-US", {
+  const formatted = new Date(seconds * 1000).toLocaleString("en-US", {
     weekday: "short",
     year: "numeric",
     month: "short",

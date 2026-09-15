@@ -21,7 +21,7 @@ import { signIn, signUp } from "@/lib/actions/auth.action";
 const authFormSchema = (type: FormType) => {
   return z.object({
     name: type === "sign-up" ? z.string().min(3) : z.string().optional(),
-    email: z.string().email(),
+    email: z.email(),
     password: z.string().min(3),
   });
 };

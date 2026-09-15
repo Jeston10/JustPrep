@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { FiMessageCircle, FiX, FiSend, FiMail } from "react-icons/fi";
 
+let messageSequence = 0;
+const nextMessageId = () => String(++messageSequence);
+
 interface Message {
   id: string;
   text: string;
@@ -43,7 +46,7 @@ const AIChatbot = () => {
     if (!inputValue.trim()) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: nextMessageId(),
       text: inputValue,
       isUser: true,
       timestamp: new Date(),
@@ -56,7 +59,7 @@ const AIChatbot = () => {
     setTimeout(() => {
       const aiResponse = generateAIResponse(inputValue);
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: nextMessageId(),
         text: aiResponse,
         isUser: false,
         timestamp: new Date(),
