@@ -4,6 +4,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // pino (and its pretty transport) spawn workers; keep them out of the server bundle.
+  serverExternalPackages: ["pino", "pino-pretty"],
 };
 
 export default nextConfig;

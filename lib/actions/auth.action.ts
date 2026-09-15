@@ -1,13 +1,8 @@
 "use server";
 
-import { cookies } from "next/headers";
-
-import { env } from "@/config/env";
+import { createSession } from "@/server/auth/session";
 
 import { getAdminAuth, getDb } from "@/firebase/admin";
-
-// Session duration (1 week)
-const SESSION_DURATION = 60 * 60 * 24 * 7;
 
 /** Subset of the Firestore user document used by the login-streak helpers. */
 type StoredUser = Omit<User, "id">;
@@ -16,25 +11,6 @@ const readUser = async (userId: string): Promise<StoredUser | undefined> => {
   const snapshot = await getDb().collection("users").doc(userId).get();
   return snapshot.data() as StoredUser | undefined;
 };
-
-// Set session cookie
-async function setSessionCookie(idToken: string) {
-  const cookieStore = await cookies();
-
-  // Create session cookie
-  const sessionCookie = await getAdminAuth().createSessionCookie(idToken, {
-    expiresIn: SESSION_DURATION * 1000, // milliseconds
-  });
-
-  // Set cookie in the browser
-  cookieStore.set("session", sessionCookie, {
-    maxAge: SESSION_DURATION,
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    path: "/",
-    sameSite: "lax",
-  });
-}
 
 export async function signUp(params: SignUpParams) {
   const { uid, name, email } = params;
@@ -83,7 +59,7 @@ export async function signIn(params: SignInParams) {
     // Throws if the user does not exist.
     const userRecord = await getAdminAuth().getUserByEmail(email);
 
-    await setSessionCookie(idToken);
+    await createSession(idToken);
 
     // Track daily login
     await recordDailyLogin(userRecord.uid);
@@ -95,41 +71,6 @@ export async function signIn(params: SignInParams) {
       message: "Failed to log into account. Please try again.",
     };
   }
-}
-
-// Sign out user by clearing the session cookie
-export async function signOut() {
-  const cookieStore = await cookies();
-
-  cookieStore.delete("session");
-}
-
-// Get current user from session cookie
-export async function getCurrentUser(): Promise<User | null> {
-  const cookieStore = await cookies();
-
-  const sessionCookie = cookieStore.get("session")?.value;
-  if (!sessionCookie) return null;
-
-  try {
-    const decodedClaims = await getAdminAuth().verifySessionCookie(sessionCookie, true);
-
-    const userRecord = await getDb().collection("users").doc(decodedClaims.uid).get();
-    if (!userRecord.exists) return null;
-
-    return {
-      ...(userRecord.data() as StoredUser),
-      id: userRecord.id,
-    };
-  } catch {
-    return null;
-  }
-}
-
-// Check if user is authenticated
-export async function isAuthenticated() {
-  const user = await getCurrentUser();
-  return !!user;
 }
 
 // Record daily login for streak tracking

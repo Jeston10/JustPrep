@@ -9,7 +9,7 @@ export default function ProfileClient({
   user,
   averageScore,
 }: {
-  user: User | null;
+  user: { email: string; description?: string | undefined; photoURL?: string | undefined } | null;
   averageScore?: number | null;
 }) {
   const [description, setDescription] = useState(user?.description ?? "");

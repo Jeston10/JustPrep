@@ -1,6 +1,7 @@
+import { getCurrentUser } from "@/server/auth/session";
+
 import ProfileClient from "@/components/ProfileClient";
 
-import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getInterviewsByUserId, getFeedbackByInterviewId } from "@/lib/actions/general.action";
 
 export default async function ProfilePage() {

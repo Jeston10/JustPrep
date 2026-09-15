@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { signOut } from "@/lib/actions/auth.action";
+import { destroySession } from "@/server/auth/session";
 
 export async function POST() {
   try {
     // Clear the session cookie
-    await signOut();
+    await destroySession();
 
     return NextResponse.json({
       success: true,

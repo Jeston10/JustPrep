@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -6,51 +5,32 @@ import { type ReactNode } from "react";
 import { FaLinkedin, FaInstagram, FaGithub } from "react-icons/fa";
 import { FiHome, FiUser } from "react-icons/fi";
 
+import { getCurrentUser } from "@/server/auth/session";
+
 import AIChatbot from "@/components/AIChatbot";
 import DailyLoginStar from "@/components/DailyLoginStar";
 import DynamicCareerQuote from "@/components/DynamicCareerQuote";
 import LiveDateTime from "@/components/LiveDateTime";
 import SettingsMenu from "@/components/SettingsMenu";
 
-import {
-  isAuthenticated,
-  getCurrentUser,
-  hasLoggedInToday,
-  getUserLoginStreak,
-} from "@/lib/actions/auth.action";
+import { hasLoggedInToday, getUserLoginStreak } from "@/lib/actions/auth.action";
 
-const PUBLIC_ROUTES = ["/sign-in", "/sign-up"];
-
+// Every route under (root) requires a session; the cookie is verified once per request
+// (React.cache) so pages below can call getCurrentUser() freely.
 const Rootlayout = async ({ children }: { children: ReactNode }) => {
-  const headersList = await headers();
-  const currentPath = headersList.get("x-next-url") ?? "/";
+  const user = await getCurrentUser();
+  if (!user) redirect("/sign-in");
 
-  // Skip auth check for public pages
-  if (!PUBLIC_ROUTES.includes(currentPath)) {
-    const isUserAuthenticated = await isAuthenticated();
-
-    if (!isUserAuthenticated) {
-      redirect("/sign-in");
-    }
-  }
-
-  // Get user data for daily login star (only for authenticated routes)
-  let user = null;
+  // Streak widget data (non-essential; removed in P3.5)
   let initialHasLoggedInToday = false;
   let initialStreak = 0;
-
-  if (!PUBLIC_ROUTES.includes(currentPath)) {
-    try {
-      user = await getCurrentUser();
-      if (user?.id) {
-        [initialHasLoggedInToday, initialStreak] = await Promise.all([
-          hasLoggedInToday(user.id),
-          getUserLoginStreak(user.id),
-        ]);
-      }
-    } catch {
-      // Streak widget is non-essential; render without it.
-    }
+  try {
+    [initialHasLoggedInToday, initialStreak] = await Promise.all([
+      hasLoggedInToday(user.id),
+      getUserLoginStreak(user.id),
+    ]);
+  } catch {
+    // Render without streak data.
   }
 
   // Restore to simple layout
@@ -65,13 +45,11 @@ const Rootlayout = async ({ children }: { children: ReactNode }) => {
             <h2 className="text-primary-100">JustPrep</h2>
           </Link>
           {/* Daily Login Star next to JustPrep */}
-          {user && (
-            <DailyLoginStar
-              userId={user.id}
-              initialHasLoggedInToday={initialHasLoggedInToday}
-              initialStreak={initialStreak}
-            />
-          )}
+          <DailyLoginStar
+            userId={user.id}
+            initialHasLoggedInToday={initialHasLoggedInToday}
+            initialStreak={initialStreak}
+          />
           <DynamicCareerQuote />
         </div>
         <div className="mt-2 flex items-center gap-2">

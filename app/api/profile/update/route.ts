@@ -1,19 +1,14 @@
-import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { getAdminAuth, getDb } from "@/firebase/admin";
+import { requireUserChecked } from "@/server/auth/session";
+import { isAppError } from "@/server/errors";
+
+import { getDb } from "@/firebase/admin";
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("session")?.value;
-
-    if (!sessionCookie) {
-      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
-    }
-
-    const decodedClaims = await getAdminAuth().verifySessionCookie(sessionCookie, true);
-    const uid = decodedClaims.uid;
+    // Profile edits are a sensitive operation: revocation is checked (RISKS R22).
+    const { id: uid } = await requireUserChecked();
 
     const { description, photoURL } = (await req.json()) as {
       description?: unknown;
@@ -33,7 +28,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, message: "Profile updated successfully" });
-  } catch {
+  } catch (error) {
+    if (isAppError(error) && error.code === "UNAUTHENTICATED") {
+      return NextResponse.json({ success: false, message: error.message }, { status: 401 });
+    }
     return NextResponse.json(
       { success: false, message: "An unexpected error occurred." },
       { status: 500 },
