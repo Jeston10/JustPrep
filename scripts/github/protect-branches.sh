@@ -10,7 +10,7 @@ REPO="${1:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}"
 CHECKS='"Lint · Typecheck · Secrets","Unit · Integration","Build · Audit · Size","Check source branch"'
 
 protect() {
-  branch="$1"; linear="$2"
+  branch="$1"; linear="$2" # linear history stays off: promotions are merge commits (PROCESS.md)
   echo "Protecting $REPO:$branch"
   gh api -X PUT "repos/$REPO/branches/$branch/protection" \
     -H "Accept: application/vnd.github+json" \
@@ -31,6 +31,6 @@ protect() {
 JSON
 }
 
-protect main true
+protect main false
 protect dev false
 echo "Done. Verify under Settings → Branches."
