@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
+import { env } from "@/config/env";
+
 import { interviewer } from "@/constants";
 
 import { createFeedback } from "@/lib/actions/general.action";
@@ -135,7 +137,7 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
     setCallStatus(CallStatus.CONNECTING);
 
     if (type === "generate") {
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID, {
+      await vapi.start(env.NEXT_PUBLIC_VAPI_WORKFLOW_ID, {
         variableValues: {
           username: userName,
           userid: userId,

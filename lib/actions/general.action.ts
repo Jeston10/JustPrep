@@ -1,10 +1,15 @@
 "use server";
 
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
+
+import { env } from "@/config/env";
 
 import { feedbackSchema } from "@/constants";
 import { db } from "@/firebase/admin";
+
+// Provider factory moves to server/llm in P2.3.
+const google = createGoogleGenerativeAI({ apiKey: env.GEMINI_API_KEY });
 
 export async function createFeedback(params: CreateFeedbackParams) {
   const { interviewId, userId, transcript, feedbackId } = params;

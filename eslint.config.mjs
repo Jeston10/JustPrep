@@ -99,6 +99,14 @@ export default tseslint.config(
       ],
       "import/no-duplicates": "error",
       "jsx-a11y/no-autofocus": "off",
+      // process.env is read only in config/env.ts (GUARDRAILS B4); the override below re-enables it there.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "MemberExpression[object.name='process'][property.name='env']",
+          message: "Read environment variables through `env` from config/env.ts, not process.env.",
+        },
+      ],
       // Vendor SDKs are forbidden everywhere by default; server/* adapters opt back in below.
       ...restricted(
         VENDOR_SDKS,
@@ -175,6 +183,12 @@ export default tseslint.config(
         },
       ],
     },
+  },
+
+  // The single module allowed to touch process.env.
+  {
+    files: ["config/env.ts"],
+    rules: { "no-restricted-syntax": "off" },
   },
 
   // LEGACY allowances — each is deleted by the PR named. Do not add new entries.

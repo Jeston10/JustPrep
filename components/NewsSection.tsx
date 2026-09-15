@@ -48,6 +48,8 @@ export default function NewsSection() {
         <p className="text-white">Loading news...</p>
       ) : error ? (
         <p className="text-red-400">{error}</p>
+      ) : articles.length === 0 ? (
+        <p className="text-white">No news available.</p>
       ) : (
         <>
           <ul className="flex w-full flex-col gap-4">
