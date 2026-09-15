@@ -12,13 +12,13 @@ milestone/p<N>-<name>                 one per phase in docs/MILESTONES.md; creat
         │  PR when the phase exit criteria are met (CI green on the milestone branch)
         ▼
 dev                                   integration; deployed to the preview environment; soak-tested
-        │  PR only from dev (promotion guard) with CI green; squash or merge commit, tagged
+        │  PR only from dev (promotion guard) with CI green; merge commit, tagged
         ▼
 main                                  production; protected; never receives direct pushes
 ```
 
 Rules:
-- `main` and `dev` are protected: PRs only, required checks (`CI` jobs + `Promotion guard`), no force-push, linear history on `main`.
+- `main` and `dev` are protected: PRs only, required checks (`CI` jobs + `Promotion guard`), no force-push, no deletions. Promotions are **merge commits** (not squash/rebase) so `dev` and `main` share history and each phase stays traceable.
 - Milestone branches are `milestone/p0-toolchain`, `milestone/p1-security`, … (names in `docs/MILESTONES.md`). They are deleted after their PR into `dev` merges; the next milestone branch is cut from the updated `dev`.
 - Work branches are cut from the current milestone branch and merged back into it by PR. They never target `dev` or `main`.
 - `hotfix/*` may target `dev` directly (and is then promoted to `main` through `dev`); it is the only exception.
