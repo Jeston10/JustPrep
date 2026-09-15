@@ -39,7 +39,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm dlx knip
+      - run: pnpm exec knip
       - name: Secret scan
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -59,9 +59,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test -- --coverage
       - name: Integration (Firestore emulator)
-        run: pnpm dlx firebase-tools emulators:exec --only auth,firestore "pnpm test:integration"
-        env:
-          FIREBASE_PROJECT_ID: demo-justprep
+        run: pnpm dlx firebase-tools emulators:exec --only auth,firestore --project demo-justprep "pnpm test:integration"
 
   build:
     name: Build · Audit · Size
@@ -79,7 +77,7 @@ jobs:
       - run: pnpm build
         env:
           SKIP_ENV_VALIDATION: "1"
-      - run: pnpm dlx size-limit
+      - run: pnpm exec size-limit
 
   e2e:
     name: E2E · Responsive · A11y
@@ -94,11 +92,30 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm dlx playwright install --with-deps chromium webkit
-      - run: pnpm dlx firebase-tools emulators:exec --only auth,firestore "pnpm test:e2e"
+      - run: pnpm exec playwright install --with-deps chromium
+      # Demo values: the Firebase web config is public by design and the emulator accepts any project id.
+      # Server secrets are absent, so SKIP_ENV_VALIDATION=1; nothing in the e2e suite needs them yet.
+      - run: pnpm build
         env:
-          FIREBASE_PROJECT_ID: demo-justprep
           SKIP_ENV_VALIDATION: "1"
+          NEXT_PUBLIC_FIREBASE_API_KEY: demo-api-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-justprep.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-justprep
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:demo"
+          NEXT_PUBLIC_VAPI_WEB_TOKEN: demo
+          NEXT_PUBLIC_VAPI_WORKFLOW_ID: demo
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+      - run: pnpm dlx firebase-tools emulators:exec --only auth,firestore --project demo-justprep "pnpm test:e2e"
+        env:
+          SKIP_ENV_VALIDATION: "1"
+          NEXT_PUBLIC_FIREBASE_API_KEY: demo-api-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-justprep.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-justprep
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:demo"
+          NEXT_PUBLIC_VAPI_WEB_TOKEN: demo
+          NEXT_PUBLIC_VAPI_WORKFLOW_ID: demo
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          CI: "true"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

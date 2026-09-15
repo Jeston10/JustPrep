@@ -47,20 +47,25 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
+    "@playwright/test": "^1.63.0",
+    "@size-limit/file": "^14.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.20.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "knip": "^6.35.1",
     "lefthook": "^2.1.14",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "size-limit": "^14.0.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5",
-    "typescript-eslint": "^8.70.0"
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
