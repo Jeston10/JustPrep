@@ -38,11 +38,12 @@ const nextCookieStore = async (): Promise<SessionCookieStore> => {
   };
 };
 
-const deps = async (): Promise<SessionDeps> => ({
-  auth: getAdminAuth(),
-  cookies: await nextCookieStore(),
-  isProduction,
-});
+// Read the cookie store first: `cookies()` is what opts a route into dynamic rendering, and it must
+// run before the Admin SDK initialises, or a build-time prerender would try to load credentials.
+const deps = async (): Promise<SessionDeps> => {
+  const cookieStore = await nextCookieStore();
+  return { auth: getAdminAuth(), cookies: cookieStore, isProduction };
+};
 
 export interface SessionUser {
   id: string;
