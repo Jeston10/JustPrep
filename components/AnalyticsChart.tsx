@@ -42,6 +42,7 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length > 0) {
     const first = payload[0];
+    if (!first) return null;
     return (
       <div className="rounded-xl border border-purple-400 bg-[#1a1625]/95 px-4 py-2 shadow-xl backdrop-blur-md">
         <p className="font-mono text-base font-bold text-purple-300">{label}</p>

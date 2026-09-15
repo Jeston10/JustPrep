@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getFeedbackByInterviewId, getInterviewById } from "@/lib/actions/general.action";
 import { getRandomInterviewCover } from "@/lib/utils";
 
-const InterviewDetails = async ({ params }: RouteParams) => {
+const InterviewDetails = async ({ params }: RouteParams<{ id: string }>) => {
   const { id } = await params;
 
   const user = await getCurrentUser();

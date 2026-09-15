@@ -66,7 +66,7 @@ const DisplayTechIcons = ({ techStack, iconSize = 20, maxIcons }: DisplayTechIco
       {iconsToShow.map((tech, index) => {
         const key = tech.toLowerCase().replace(/\s+/g, "");
         const localPath = localTechImages[key];
-        const src = localPath || fallbackIcon;
+        const src = localPath ?? fallbackIcon;
         return (
           <div
             key={tech}

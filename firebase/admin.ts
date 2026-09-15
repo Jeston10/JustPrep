@@ -2,19 +2,23 @@ import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
-let app: App;
+// Env validation moves to config/env.ts in P0.3; until then fail fast with a clear message.
+const requireEnv = (name: string): string => {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  return value;
+};
 
-if (!getApps().length) {
-  app = initializeApp({
+const createApp = (): App =>
+  initializeApp({
     credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      projectId: requireEnv("FIREBASE_PROJECT_ID"),
+      clientEmail: requireEnv("FIREBASE_CLIENT_EMAIL"),
+      privateKey: requireEnv("FIREBASE_PRIVATE_KEY").replace(/\\n/g, "\n"),
     }),
   });
-} else {
-  app = getApps()[0];
-}
+
+const app: App = getApps()[0] ?? createApp();
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
