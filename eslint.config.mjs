@@ -185,9 +185,10 @@ export default tseslint.config(
     },
   },
 
-  // The single module allowed to touch process.env.
+  // The single app module allowed to touch process.env, plus tooling configs (test runners read
+  // CI variables; they are not application code and never see secrets).
   {
-    files: ["config/env.ts"],
+    files: ["config/env.ts", "*.config.{ts,mts}"],
     rules: { "no-restricted-syntax": "off" },
   },
 

@@ -25,4 +25,4 @@ pre-push:
     typecheck:
       run: node_modules/.bin/tsc --noEmit
     unit:
-      run: sh scripts/hooks/vitest.sh
+      run: node_modules/.bin/vitest run
