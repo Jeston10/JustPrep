@@ -21,12 +21,14 @@ export default function DynamicCareerQuote() {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % quotes.length);
     }, 15000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-4 mb-6 px-6 py-3 bg-gray-900 text-primary-100 border border-primary-200 rounded-xl shadow-lg text-center text-lg font-semibold animate-fadeIn">
+    <div className="mx-auto mt-4 mb-6 w-full max-w-2xl animate-fadeIn rounded-xl border border-primary-200 bg-gray-900 px-6 py-3 text-center text-lg font-semibold text-primary-100 shadow-lg">
       <span className="block">{quotes[index]}</span>
     </div>
   );
-} 
+}

@@ -1,0 +1,28 @@
+# Enforces the promotion path: only `dev` may open a PR into `main`, and only
+# `milestone/*` or hotfix branches may open a PR into `dev`. Pair with branch
+# protection (required checks: CI + this job) so the rule cannot be bypassed.
+name: Promotion guard
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Check source branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: main accepts only dev
+        if: github.base_ref == 'main' && github.head_ref != 'dev'
+        run: |
+          echo "::error::PRs into main must come from dev (got '${{ github.head_ref }}')."
+          exit 1
+      - name: dev accepts milestone/* and hotfix/*
+        if: github.base_ref == 'dev' && !startsWith(github.head_ref, 'milestone/') && !startsWith(github.head_ref, 'hotfix/')
+        run: |
+          echo "::error::PRs into dev must come from milestone/* or hotfix/* (got '${{ github.head_ref }}')."
+          exit 1
+      - run: echo "Promotion path OK"

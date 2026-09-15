@@ -19,7 +19,7 @@ Threat model, controls, and the checklist every PR touching the server must sati
 ### 2.1 Authentication and sessions
 - Firebase Auth on the client → ID token → server mints a **session cookie** (`httpOnly`, `secure`, `sameSite=lax`, `path=/`, 7-day expiry). Cookie name is prefixed `__Host-` in production.
 - `server/auth/session.ts`: `getCurrentUser()` wrapped in `React.cache` (one verification per request). `checkRevoked` is true only on sensitive operations (delete account, change email) — otherwise false, with a 7-day lifetime bound.
-- `requireUser()` throws `AppError('UNAUTHENTICATED')`; every action/route calls it first. `middleware.ts` redirects unauthenticated `(app)` traffic by cookie presence only (defence in depth, not the gate).
+- `requireUser()` throws `AppError('UNAUTHENTICATED')`; every action/route calls it first. `proxy.ts` redirects unauthenticated `(app)` traffic by cookie presence only (defence in depth, not the gate).
 - Sign-out revokes refresh tokens (`auth.revokeRefreshTokens(uid)`) and clears the cookie.
 - Password policy: ≥ 8 chars enforced client and server (Firebase min is 6; we require 8). Email verification required before first interview.
 - OAuth (M4): Google via Firebase; state/nonce handled by SDK; redirect URLs allow-listed.
@@ -74,7 +74,7 @@ Threat model, controls, and the checklist every PR touching the server must sati
 - Audio recordings are opt-in, encrypted at rest by the provider, deleted after 30 days by cron.
 
 ### 2.9 HTTP hardening (`next.config.ts` headers)
-- `Content-Security-Policy`: `default-src 'self'; script-src 'self' 'nonce-…' https://*.posthog.com; connect-src 'self' https://*.googleapis.com wss://*.googleapis.com https://*.posthog.com https://*.sentry.io https://<r2-bucket>; img-src 'self' data: blob: https://<r2-bucket>; media-src 'self' blob: https://<r2-bucket>; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`. Nonce generated in `middleware.ts`.
+- `Content-Security-Policy`: `default-src 'self'; script-src 'self' 'nonce-…' https://*.posthog.com; connect-src 'self' https://*.googleapis.com wss://*.googleapis.com https://*.posthog.com https://*.sentry.io https://<r2-bucket>; img-src 'self' data: blob: https://<r2-bucket>; media-src 'self' blob: https://<r2-bucket>; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`. Nonce generated in `proxy.ts`.
 - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
 - `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: microphone=(self), camera=(self), geolocation=()`, `X-Frame-Options: DENY`.
 - Server actions: Next.js origin check enabled (`experimental.serverActions.allowedOrigins` limited to our domains).

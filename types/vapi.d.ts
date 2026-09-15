@@ -44,7 +44,4 @@ interface FunctionCallResultMessage extends BaseMessage {
   };
 }
 
-type Message =
-  | TranscriptMessage
-  | FunctionCallMessage
-  | FunctionCallResultMessage;
+type Message = TranscriptMessage | FunctionCallMessage | FunctionCallResultMessage;

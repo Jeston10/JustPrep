@@ -1,0 +1,11 @@
+# Prettier ignore — generated, vendored, and binary paths
+node_modules
+.next
+out
+build
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+public
+*.md

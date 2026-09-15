@@ -1,0 +1,8 @@
+[
+  {
+    "name": "client JS, all static chunks, gzip — ratchet: lower this as legacy code is removed (P3/P4); per-route budgets arrive with Lighthouse CI (P8.7)",
+    "path": ".next/static/chunks/**/*.js",
+    "limit": "560 kB",
+    "gzip": true
+  }
+]

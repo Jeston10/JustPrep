@@ -1,3 +1,13 @@
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
+
 # AGENTS.md — Operating manual for JustPrep
 
 This file is the single entry point for any engineer or AI agent working in this repository. Read it fully before touching code. It is intentionally short; it links to the authoritative documents in `docs/`.
@@ -36,7 +46,7 @@ docs/           Handbook: architecture, standards, security, design, decisions (
 ## 4. How to work
 
 - **Before starting a task**: read the relevant `docs/` page and the ADRs it references. Check `docs/MILESTONES.md` for where the task sits and what it depends on, and **read the `docs/RISKS.md` rows tagged for that phase** (MILESTONES §13). A PR that closes a risk row says so (`Closes R7`) and updates the row's status.
-- **Branching**: `main` is protected. Branch as `type/short-description` (`feat/text-interview-mode`, `fix/profile-cookie-await`). One concern per branch.
+- **Branching**: `main` and `dev` are protected. Cut work branches from the current `milestone/p<N>-<name>` branch as `type/short-description` (`feat/text-interview-mode`, `fix/profile-cookie-await`) and PR back into it. Promotion is `milestone/* → dev → main`, each by PR with green CI (`PROCESS.md`). One concern per branch.
 - **Commits**: Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`, `perf:`, `security:`). Imperative mood, ≤ 72 chars subject, body explains *why*.
 - **Pull requests**: use the template. Include screenshots for UI at 375 px and 1440 px minimum. Link the plan item or issue. Self-review the diff before requesting review.
 - **Definition of done** (all required):

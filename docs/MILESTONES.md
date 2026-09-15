@@ -2,7 +2,7 @@
 
 This is the work breakdown for `docs/IMPLEMENTATION_PLAN.md`: which file changes happen in which phase, sliced into PR-sized units, with the procedure and verification for each. `ARCHITECTURE.md` is the target; this document is the route. If the two disagree, fix this document.
 
-Conventions: **P0…P8** = phases. **PR n.m** = a branch/PR inside a phase, merged in order unless marked *parallel*. Effort is calendar days for one engineer plus an agent. Tags at phase exit: `v0.2.0` (P0) … `v1.0.0` (P5), `v1.x` after.
+Conventions: **P0…P8** = phases, each on its own integration branch `milestone/p<N>-<name>` cut from `dev` (P0 `milestone/p0-toolchain`, P1 `milestone/p1-security`, P2 `milestone/p2-architecture`, P3 `milestone/p3-ui-revamp`, P4 `milestone/p4-core-product`, P5 `milestone/p5-voice`, P6 `milestone/p6-personalisation`, P7 `milestone/p7-learning-loop`, P8 `milestone/p8-growth`). **PR n.m** = a branch/PR inside a phase targeting the milestone branch, merged in order unless marked *parallel*. Phase exit = milestone branch merged into `dev` with green CI, then `dev` promoted to `main` and tagged. Effort is calendar days for one engineer plus an agent. Tags at phase exit: `v0.2.0` (P0) … `v1.0.0` (P5), `v1.x` after.
 
 ---
 
@@ -35,7 +35,7 @@ Every file in the repo today, where it ends up, and when. "Delete" means removed
 | — | `app/error.tsx`, `not-found.tsx`, `(app)/error.tsx`, `loading.tsx` per route | P3.3 | New |
 | — | `app/robots.ts`, `sitemap.ts`, `manifest.ts`, `opengraph-image.tsx` | P3.6 / P8.4 | New |
 | — | `app/(dev)/ui/page.tsx` (component gallery, excluded from prod) | P3.2 | New |
-| — | `middleware.ts` | P1.2 | New |
+| — | `proxy.ts` | P1.2 | New |
 
 ### 0.2 `components/`
 
@@ -137,7 +137,7 @@ Every file in the repo today, where it ends up, and when. "Delete" means removed
 | PR | Branch | Scope | Procedure | Verify |
 |---|---|---|---|---|
 | 1.1 | `security/session-and-logger` | `server/auth/session.ts` (`React.cache(getCurrentUser)`, `requireUser`, `__Host-` cookie in prod, `checkRevoked` only for sensitive ops), `server/observability/logger.ts` (pino + redaction), delete all `console.log`, sign-out revokes refresh tokens, `(auth)`/`(root)` layouts use the helper | Grep `console.` → 0; grep `process.env` → only `config/env.ts` | Unit tests for session helpers with a fake admin auth; no cookie in logs (test asserts redaction) |
-| 1.2 | `security/headers-middleware` | `middleware.ts` (cookie-presence gate for `(root)` now, `(app)` later; CSP nonce), security headers in `next.config.ts`, `serverActions.allowedOrigins` | Start with `Content-Security-Policy-Report-Only`, fix violations, then enforce | `tests/unit/headers.test.ts` asserts every header; manual check in DevTools |
+| 1.2 | `security/headers-proxy` | `proxy.ts` (cookie-presence gate for `(root)` now, `(app)` later; CSP nonce), security headers in `next.config.ts`, `serverActions.allowedOrigins` | Start with `Content-Security-Policy-Report-Only`, fix violations, then enforce | `tests/unit/headers.test.ts` asserts every header; manual check in DevTools |
 | 1.3 | `security/firestore-rules-indexes` | `firebase/firebase.json` (emulators), `firestore.rules` deny-all, `firestore.indexes.json` for every current query (verify B8), `scripts/seed-emulator.ts`, `pnpm dev` uses emulators when `FIREBASE_EMULATOR=1` | Export prod indexes with `firebase firestore:indexes` as baseline | Rules test: client read/write denied; queries run on emulator without index errors |
 | 1.4 | `security/protect-endpoints` | Delete `api/auth/signout`, `api/daily-login/*`, `api/profile/update`; add `features/auth/actions.ts` (`signOut`), `features/profile/actions.ts` (`updateProfile` zod), `server/services/streak.service.ts` (record on first authenticated request per day, user-timezone aware); `createFeedback` derives `userId` from session, checks interview exists, idempotent per (interviewId,userId) until attempts land; `/api/vapi/generate` requires session + zod + validates `userid === session.uid` | One endpoint per commit | Tests: unauthenticated → 401/`UNAUTHENTICATED`; wrong owner → `FORBIDDEN`; invalid body → 400 |
 | 1.5 | `security/rate-limiting` | `server/ratelimit/`, `config/limits.ts`, applied to sign-in/up actions, `createFeedback`, `updateProfile`, `/api/vapi/generate` | Upstash free DB; keys `rl:{name}:{uid|ip}` | Unit test with in-memory limiter fake; manual burst test returns `RATE_LIMITED` |
@@ -292,7 +292,7 @@ Indicative timeline: P0–P2 ≈ 2 weeks · P3 ≈ 1 week · P4 ≈ 1.5 weeks ·
 | §4 SOLID rules | Enforced from P2.4 by lint layer rules; contract tests P2.3/P5.8 |
 | §5 Data model v2 | P2.5 (attempts, stats, logins, usage), P4.1 (questions v2 fields), P6.1 (resumes), P7 (bank, plans) |
 | §6 Flows | Create: P4.1 · Take: P4.2–4.3 (text), P5 (voice) · Feedback: P4.4 |
-| §7 Cross-cutting (middleware, caching, errors, observability, flags) | P1.1, P1.2, P1.6, P2.1, P3.3, P4.1 (generation cache) |
+| §7 Cross-cutting (proxy, caching, errors, observability, flags) | P1.1, P1.2, P1.6, P2.1, P3.3, P4.1 (generation cache) |
 
 ---
 
@@ -323,7 +323,7 @@ Read these rows before starting the phase; link them in the PR that closes them.
 | P1.3 | R17 (`!=` + `orderBy` query) |
 | P1.4 | **R2 (open endpoints)**, R12 |
 | P1.5 | R3 (verify Upstash limits) |
-| P2.3 | R3 (Gemini/Groq limits), R24 (global daily caps) |
+| P2.3 | R3 (Gemini/Groq limits), R24 (global daily caps), **R26 (valid Gemini key required)** |
 | P2.5 | **R8 (prod migration procedure)** |
 | P2.6 | R4 (R2 card check → Supabase fallback), R5 (never Firebase Storage), R9 (CSP domains) |
 | P3 start | **R10 (do not start before P2 exit)** |

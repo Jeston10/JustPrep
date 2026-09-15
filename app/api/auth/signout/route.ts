@@ -1,24 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { signOut } from '@/lib/actions/auth.action';
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+import { signOut } from "@/lib/actions/auth.action";
+
+export async function POST() {
   try {
     // Clear the session cookie
     await signOut();
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Logged out successfully' 
+
+    return NextResponse.json({
+      success: true,
+      message: "Logged out successfully",
     });
-  } catch (error) {
-    console.error('Signout error:', error);
-    
+  } catch {
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Failed to sign out' 
+      {
+        success: false,
+        message: "Failed to sign out",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

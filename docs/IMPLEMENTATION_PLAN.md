@@ -28,7 +28,7 @@ Do this on the current UI; the revamp comes after the foundation is safe.
 
 1. `server/auth/session.ts`: `React.cache`d `getCurrentUser`, `requireUser`, `__Host-` cookie in prod, `checkRevoked` only on sensitive ops; sign-out revokes refresh tokens.
 2. Remove every `console.log`; add `server/observability/logger.ts` (pino + redaction).
-3. `middleware.ts`: cookie-presence gate for `(app)` routes + CSP nonce + security headers (or headers in `next.config.ts`).
+3. `proxy.ts`: cookie-presence gate for `(app)` routes + CSP nonce + security headers (or headers in `next.config.ts`).
 4. `firebase/firestore.rules` deny-all; `firestore.indexes.json` for every query; `firebase.json` emulators; `pnpm dev` runs against emulators with seed data.
 5. Protect and validate: `/api/vapi/generate` (auth + zod, until removed), `createFeedback` (derive `userId` from session, ownership check), daily-login routes (delete; derive from session in layout), profile update (fix `await cookies()`, zod, move to action).
 6. `server/ratelimit` (Upstash) + `config/limits.ts`; apply to auth, generate, feedback, profile.
