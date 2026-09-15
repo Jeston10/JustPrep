@@ -1,27 +1,28 @@
-# Git hooks (install: `pnpm dlx lefthook install`; runs automatically via package.json "prepare" once Phase 0 lands).
-# Mirrors GitLab's use of lefthook. Keep hooks fast: staged files only on commit; full checks on push.
+# Git hooks (installed by `pnpm install` via the "prepare" script; mirrors GitLab's use of lefthook).
+# Keep hooks fast: staged files only on commit; full checks on push.
+# Commands call local binaries directly so the hook does not depend on which pnpm is on PATH.
 
 pre-commit:
   parallel: true
   commands:
     prettier:
-      glob: "*.{ts,tsx,js,mjs,json,md,yml,yaml,css}"
-      run: pnpm prettier --write {staged_files} && git add {staged_files}
+      glob: "*.{ts,tsx,js,mjs,cjs,json,yml,yaml,css}"
+      run: node_modules/.bin/prettier --write {staged_files} && git add {staged_files}
     eslint:
-      glob: "*.{ts,tsx,js,mjs}"
-      run: pnpm eslint --max-warnings=0 {staged_files}
+      glob: "*.{ts,tsx,js,mjs,cjs}"
+      run: node_modules/.bin/eslint --max-warnings=0 {staged_files}
     gitleaks:
-      run: pnpm dlx gitleaks protect --staged --redact --verbose
+      run: sh scripts/hooks/gitleaks.sh
 
 commit-msg:
   commands:
     commitlint:
-      run: pnpm dlx commitlint --edit {1}
+      run: node_modules/.bin/commitlint --edit {1}
 
 pre-push:
   parallel: true
   commands:
     typecheck:
-      run: pnpm typecheck
+      run: node_modules/.bin/tsc --noEmit
     unit:
-      run: pnpm test
+      run: sh scripts/hooks/vitest.sh

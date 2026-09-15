@@ -1,0 +1,16 @@
+# Normalise line endings (RISKS R19). Text files are LF in the repo and in working trees.
+* text=auto eol=lf
+
+# Lockfiles and generated files
+pnpm-lock.yaml -diff
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.webp binary
+*.mp3 binary
+*.wav binary

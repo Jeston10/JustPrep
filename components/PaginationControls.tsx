@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { Button } from "./ui/button";
 
 interface PaginationControlsProps {
@@ -15,7 +16,7 @@ export default function PaginationControls({
   const getPageUrl = (page: number) => {
     const params = new URLSearchParams();
     if (page > 1) {
-      params.set('page', page.toString());
+      params.set("page", page.toString());
     }
     const queryString = params.toString();
     return queryString ? `/?${queryString}#${sectionId}` : `/#${sectionId}`;
@@ -24,7 +25,7 @@ export default function PaginationControls({
   const generatePageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       // Show all pages if total is small
       for (let i = 1; i <= totalPages; i++) {
@@ -49,26 +50,21 @@ export default function PaginationControls({
         }
       }
     }
-    
+
     return pages;
   };
 
   const pageNumbers = generatePageNumbers();
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-6">
+    <div className="mt-6 flex items-center justify-center gap-2">
       {/* Previous Button */}
       <Link href={getPageUrl(currentPage - 1)}>
-        <Button
-          variant="outline"
-          size="sm"
-          className="px-3 py-1"
-          disabled={currentPage === 1}
-        >
+        <Button variant="outline" size="sm" className="px-3 py-1" disabled={currentPage === 1}>
           Previous
         </Button>
       </Link>
-      
+
       {/* Page Numbers */}
       <div className="flex items-center gap-1">
         {pageNumbers.map((page) => (
@@ -76,10 +72,10 @@ export default function PaginationControls({
             <Button
               variant={page === currentPage ? "default" : "outline"}
               size="sm"
-              className={`px-3 py-1 min-w-[40px] ${
+              className={`min-w-[40px] px-3 py-1 ${
                 page === currentPage
                   ? "bg-primary-200 text-white"
-                  : "bg-white text-primary-100 hover:bg-primary-50"
+                  : "hover:bg-primary-50 bg-white text-primary-100"
               }`}
             >
               {page}
@@ -99,11 +95,10 @@ export default function PaginationControls({
           Next
         </Button>
       </Link>
-      
-      <span className="text-sm text-light-400 ml-4">
+
+      <span className="ml-4 text-sm text-light-400">
         Page {currentPage} of {totalPages}
       </span>
     </div>
   );
 }
-

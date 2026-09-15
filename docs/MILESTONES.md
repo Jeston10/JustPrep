@@ -2,7 +2,7 @@
 
 This is the work breakdown for `docs/IMPLEMENTATION_PLAN.md`: which file changes happen in which phase, sliced into PR-sized units, with the procedure and verification for each. `ARCHITECTURE.md` is the target; this document is the route. If the two disagree, fix this document.
 
-Conventions: **P0…P8** = phases. **PR n.m** = a branch/PR inside a phase, merged in order unless marked *parallel*. Effort is calendar days for one engineer plus an agent. Tags at phase exit: `v0.2.0` (P0) … `v1.0.0` (P5), `v1.x` after.
+Conventions: **P0…P8** = phases, each on its own integration branch `milestone/p<N>-<name>` cut from `dev` (P0 `milestone/p0-toolchain`, P1 `milestone/p1-security`, P2 `milestone/p2-architecture`, P3 `milestone/p3-ui-revamp`, P4 `milestone/p4-core-product`, P5 `milestone/p5-voice`, P6 `milestone/p6-personalisation`, P7 `milestone/p7-learning-loop`, P8 `milestone/p8-growth`). **PR n.m** = a branch/PR inside a phase targeting the milestone branch, merged in order unless marked *parallel*. Phase exit = milestone branch merged into `dev` with green CI, then `dev` promoted to `main` and tagged. Effort is calendar days for one engineer plus an agent. Tags at phase exit: `v0.2.0` (P0) … `v1.0.0` (P5), `v1.x` after.
 
 ---
 

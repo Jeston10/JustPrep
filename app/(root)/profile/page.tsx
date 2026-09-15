@@ -1,6 +1,7 @@
-import { getCurrentUser } from '@/lib/actions/auth.action';
-import ProfileClient from '@/components/ProfileClient';
-import { getInterviewsByUserId, getFeedbackByInterviewId } from '@/lib/actions/general.action';
+import ProfileClient from "@/components/ProfileClient";
+
+import { getCurrentUser } from "@/lib/actions/auth.action";
+import { getInterviewsByUserId, getFeedbackByInterviewId } from "@/lib/actions/general.action";
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
@@ -12,8 +13,11 @@ export default async function ProfilePage() {
       let total = 0;
       let count = 0;
       for (const interview of interviews) {
-        const feedback = await getFeedbackByInterviewId({ interviewId: interview.id, userId: user.id });
-        if (feedback && typeof feedback.totalScore === 'number') {
+        const feedback = await getFeedbackByInterviewId({
+          interviewId: interview.id,
+          userId: user.id,
+        });
+        if (feedback && typeof feedback.totalScore === "number") {
           total += feedback.totalScore;
           count++;
         }
@@ -25,4 +29,4 @@ export default async function ProfilePage() {
   }
 
   return <ProfileClient user={user} averageScore={averageScore} />;
-} 
+}

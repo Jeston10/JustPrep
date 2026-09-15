@@ -36,7 +36,7 @@ docs/           Handbook: architecture, standards, security, design, decisions (
 ## 4. How to work
 
 - **Before starting a task**: read the relevant `docs/` page and the ADRs it references. Check `docs/MILESTONES.md` for where the task sits and what it depends on, and **read the `docs/RISKS.md` rows tagged for that phase** (MILESTONES §13). A PR that closes a risk row says so (`Closes R7`) and updates the row's status.
-- **Branching**: `main` is protected. Branch as `type/short-description` (`feat/text-interview-mode`, `fix/profile-cookie-await`). One concern per branch.
+- **Branching**: `main` and `dev` are protected. Cut work branches from the current `milestone/p<N>-<name>` branch as `type/short-description` (`feat/text-interview-mode`, `fix/profile-cookie-await`) and PR back into it. Promotion is `milestone/* → dev → main`, each by PR with green CI (`PROCESS.md`). One concern per branch.
 - **Commits**: Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`, `perf:`, `security:`). Imperative mood, ≤ 72 chars subject, body explains *why*.
 - **Pull requests**: use the template. Include screenshots for UI at 375 px and 1440 px minimum. Link the plan item or issue. Self-review the diff before requesting review.
 - **Definition of done** (all required):
