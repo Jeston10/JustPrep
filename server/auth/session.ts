@@ -97,14 +97,20 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   return loadUser(claims.uid);
 });
 
-/** Like getCurrentUser but verifies revocation with Firebase. Use for sensitive operations only. */
+/**
+ * Like getCurrentUser but verifies revocation with Firebase. Use for sensitive operations only.
+ * @public consumed by actions from P1.4
+ */
 export async function getCurrentUserChecked(): Promise<SessionUser | null> {
   const claims = await readSessionChecked(await deps());
   if (!claims) return null;
   return loadUser(claims.uid);
 }
 
-/** Throws AppError('UNAUTHENTICATED') when there is no valid session. First line of every action. */
+/**
+ * Throws AppError('UNAUTHENTICATED') when there is no valid session. First line of every action.
+ * @public consumed by actions from P1.4
+ */
 export async function requireUser(): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) throw new AppError("UNAUTHENTICATED");

@@ -43,6 +43,9 @@ export const logger: Logger = pino({
   ...(isDev ? { transport: { target: "pino-pretty", options: { colorize: true } } } : {}),
 });
 
-/** Child logger carrying a stable operation name; add per-call fields at the call site. */
+/**
+ * Child logger carrying a stable operation name; add per-call fields at the call site.
+ * @public consumed by services from P1.4
+ */
 export const opLogger = (op: string, fields: Record<string, unknown> = {}): Logger =>
   logger.child({ op, ...fields });

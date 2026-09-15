@@ -2,6 +2,7 @@
 // `message` is safe to show to users; `cause` and `meta` never leave the server.
 // P2.1 adds the Result<T, AppError> helpers and the next-safe-action error mapping.
 
+/** @public used by the Result/error-mapping helpers in P2.1 */
 export const ERROR_CODES = [
   "UNAUTHENTICATED",
   "FORBIDDEN",
