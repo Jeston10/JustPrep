@@ -25,7 +25,7 @@ interface SavedMessage {
 }
 
 // Single source of truth for Agent props (B16: the global ambient AgentProps was removed).
-export interface AgentProps {
+interface AgentProps {
   userName: string;
   userId: string;
   type: "generate" | "interview";

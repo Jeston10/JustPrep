@@ -1,4 +1,4 @@
-/** @type {import("@commitlint/types").UserConfig} */
+// commitlint configuration (Conventional Commits + the repo-specific "security" type).
 const config = {
   extends: ["@commitlint/config-conventional"],
   rules: {

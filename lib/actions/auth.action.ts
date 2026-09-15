@@ -18,7 +18,7 @@ const readUser = async (userId: string): Promise<StoredUser | undefined> => {
 };
 
 // Set session cookie
-export async function setSessionCookie(idToken: string) {
+async function setSessionCookie(idToken: string) {
   const cookieStore = await cookies();
 
   // Create session cookie
