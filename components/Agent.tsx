@@ -46,7 +46,6 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [lastMessage, setLastMessage] = useState<string>("");
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -106,10 +105,9 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
     };
   }, []);
 
-  useEffect(() => {
-    const latest = messages.at(-1);
-    if (latest) setLastMessage(latest.content);
+  const lastMessage = messages.at(-1)?.content ?? "";
 
+  useEffect(() => {
     const handleGenerateFeedback = async (
       transcript: SavedMessage[],
       targetInterviewId: string,

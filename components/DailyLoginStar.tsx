@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaStar, FaRegStar } from "react-icons/fa";
 
 interface CheckResponse {
@@ -10,6 +10,27 @@ interface CheckResponse {
 interface StreakResponse {
   success: boolean;
   streak: number;
+}
+
+/** Pure fetch of today's login status and streak. Routes are replaced in P1.4. */
+async function fetchLoginStatus(
+  userId: string,
+): Promise<{ hasLoggedInToday: boolean; streak: number }> {
+  const [todayLoginResponse, streakResponse] = await Promise.all([
+    fetch(`/api/daily-login/check?userId=${userId}`),
+    fetch(`/api/daily-login/streak?userId=${userId}`),
+  ]);
+  if (!todayLoginResponse.ok || !streakResponse.ok) {
+    throw new Error("Failed to fetch daily login data");
+  }
+  const [todayLogin, streak] = (await Promise.all([
+    todayLoginResponse.json(),
+    streakResponse.json(),
+  ])) as [CheckResponse, StreakResponse];
+  if (!todayLogin.success || !streak.success) {
+    throw new Error("Invalid response from server");
+  }
+  return { hasLoggedInToday: todayLogin.hasLoggedInToday, streak: streak.streak };
 }
 
 interface DailyLoginStarProps {
@@ -28,40 +49,42 @@ export default function DailyLoginStar({
   const [error, setError] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // Fetch in the background, but never show a loading state
-  const checkDailyLogin = useCallback(async () => {
-    if (!userId) return;
-    try {
-      setError(null);
-      const [todayLoginResponse, streakResponse] = await Promise.all([
-        fetch(`/api/daily-login/check?userId=${userId}`),
-        fetch(`/api/daily-login/streak?userId=${userId}`),
-      ]);
-      if (!todayLoginResponse.ok || !streakResponse.ok)
-        throw new Error("Failed to fetch daily login data");
-      const [todayLogin, streak] = (await Promise.all([
-        todayLoginResponse.json(),
-        streakResponse.json(),
-      ])) as [CheckResponse, StreakResponse];
-      if (todayLogin.success && streak.success) {
-        setHasLoggedInToday(todayLogin.hasLoggedInToday);
-        setLoginStreak(streak.streak);
-      } else {
-        throw new Error("Invalid response from server");
-      }
-    } catch {
-      setError("Failed to load login data");
-    }
-  }, [userId]);
-
+  // Fetch in the background, but never show a loading state. State is only set inside promise
+  // callbacks, never synchronously in the effect body.
   useEffect(() => {
-    void checkDailyLogin();
+    if (!userId) return;
+
+    const refresh = () => {
+      fetchLoginStatus(userId)
+        .then((status) => {
+          setHasLoggedInToday(status.hasLoggedInToday);
+          setLoginStreak(status.streak);
+          setError(null);
+        })
+        .catch(() => {
+          setError("Failed to load login data");
+        });
+    };
+
+    refresh();
     // Refresh in the background every 5 minutes
-    const interval = setInterval(() => void checkDailyLogin(), 5 * 60 * 1000);
+    const interval = setInterval(refresh, 5 * 60 * 1000);
     return () => {
       clearInterval(interval);
     };
-  }, [checkDailyLogin]);
+  }, [userId]);
+
+  const retry = () => {
+    fetchLoginStatus(userId)
+      .then((status) => {
+        setHasLoggedInToday(status.hasLoggedInToday);
+        setLoginStreak(status.streak);
+        setError(null);
+      })
+      .catch(() => {
+        setError("Failed to load login data");
+      });
+  };
 
   // Always show the star, never a loading dot
   return (
@@ -92,7 +115,7 @@ export default function DailyLoginStar({
               <div className="text-sm text-red-400">
                 {error}
                 <button
-                  onClick={() => void checkDailyLogin()}
+                  onClick={retry}
                   className="ml-2 text-purple-400 underline hover:text-purple-300"
                 >
                   Retry
