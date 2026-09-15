@@ -6,7 +6,7 @@ import { generateText, Output } from "ai";
 import { env } from "@/config/env";
 
 import { feedbackSchema } from "@/constants";
-import { db } from "@/firebase/admin";
+import { getDb } from "@/firebase/admin";
 
 // Provider factory moves to server/llm in P2.3.
 const google = createGoogle({ apiKey: env.GEMINI_API_KEY });
@@ -55,9 +55,9 @@ export async function createFeedback(params: CreateFeedbackParams) {
     let feedbackRef;
 
     if (feedbackId) {
-      feedbackRef = db.collection("feedback").doc(feedbackId);
+      feedbackRef = getDb().collection("feedback").doc(feedbackId);
     } else {
-      feedbackRef = db.collection("feedback").doc();
+      feedbackRef = getDb().collection("feedback").doc();
     }
 
     await feedbackRef.set(feedback);
@@ -69,7 +69,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
 }
 
 export async function getInterviewById(id: string): Promise<Interview | null> {
-  const interview = await db.collection("interviews").doc(id).get();
+  const interview = await getDb().collection("interviews").doc(id).get();
 
   return interview.data() as Interview | null;
 }
@@ -79,7 +79,7 @@ export async function getFeedbackByInterviewId(
 ): Promise<Feedback | null> {
   const { interviewId, userId } = params;
 
-  const querySnapshot = await db
+  const querySnapshot = await getDb()
     .collection("feedback")
     .where("interviewId", "==", interviewId)
     .where("userId", "==", userId)
@@ -97,7 +97,7 @@ export async function getLatestInterviews(
 ): Promise<Interview[] | null> {
   const { userId, limit = 20 } = params;
 
-  const interviews = await db
+  const interviews = await getDb()
     .collection("interviews")
     .orderBy("createdAt", "desc")
     .where("finalized", "==", true)
@@ -112,7 +112,7 @@ export async function getLatestInterviews(
 }
 
 export async function getInterviewsByUserId(userId: string): Promise<Interview[] | null> {
-  const interviews = await db
+  const interviews = await getDb()
     .collection("interviews")
     .where("userId", "==", userId)
     .orderBy("createdAt", "desc")
@@ -130,7 +130,7 @@ export async function getUserFeedbackForPast5Days(userId: string) {
   const fiveDaysAgo = new Date(now);
   fiveDaysAgo.setDate(now.getDate() - 4); // includes today
 
-  const feedbacks = await db
+  const feedbacks = await getDb()
     .collection("feedback")
     .where("userId", "==", userId)
     .where("createdAt", ">=", fiveDaysAgo.toISOString())

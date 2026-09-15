@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { db, auth } from "@/firebase/admin";
+import { getAdminAuth, getDb } from "@/firebase/admin";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
     }
 
-    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+    const decodedClaims = await getAdminAuth().verifySessionCookie(sessionCookie, true);
     const uid = decodedClaims.uid;
 
     const { description, photoURL } = (await req.json()) as {
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await db.collection("users").doc(uid).update({
+    await getDb().collection("users").doc(uid).update({
       description,
       photoURL,
     });

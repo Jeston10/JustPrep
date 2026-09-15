@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 import { env } from "@/config/env";
 
-import { auth, db } from "@/firebase/admin";
+import { getAdminAuth, getDb } from "@/firebase/admin";
 
 // Session duration (1 week)
 const SESSION_DURATION = 60 * 60 * 24 * 7;
@@ -13,7 +13,7 @@ const SESSION_DURATION = 60 * 60 * 24 * 7;
 type StoredUser = Omit<User, "id">;
 
 const readUser = async (userId: string): Promise<StoredUser | undefined> => {
-  const snapshot = await db.collection("users").doc(userId).get();
+  const snapshot = await getDb().collection("users").doc(userId).get();
   return snapshot.data() as StoredUser | undefined;
 };
 
@@ -22,7 +22,7 @@ async function setSessionCookie(idToken: string) {
   const cookieStore = await cookies();
 
   // Create session cookie
-  const sessionCookie = await auth.createSessionCookie(idToken, {
+  const sessionCookie = await getAdminAuth().createSessionCookie(idToken, {
     expiresIn: SESSION_DURATION * 1000, // milliseconds
   });
 
@@ -41,7 +41,7 @@ export async function signUp(params: SignUpParams) {
 
   try {
     // check if user exists in db
-    const userRecord = await db.collection("users").doc(uid).get();
+    const userRecord = await getDb().collection("users").doc(uid).get();
     if (userRecord.exists)
       return {
         success: false,
@@ -49,7 +49,7 @@ export async function signUp(params: SignUpParams) {
       };
 
     // save user to db
-    await db.collection("users").doc(uid).set({
+    await getDb().collection("users").doc(uid).set({
       name,
       email,
     });
@@ -81,7 +81,7 @@ export async function signIn(params: SignInParams) {
 
   try {
     // Throws if the user does not exist.
-    const userRecord = await auth.getUserByEmail(email);
+    const userRecord = await getAdminAuth().getUserByEmail(email);
 
     await setSessionCookie(idToken);
 
@@ -112,9 +112,9 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!sessionCookie) return null;
 
   try {
-    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+    const decodedClaims = await getAdminAuth().verifySessionCookie(sessionCookie, true);
 
-    const userRecord = await db.collection("users").doc(decodedClaims.uid).get();
+    const userRecord = await getDb().collection("users").doc(decodedClaims.uid).get();
     if (!userRecord.exists) return null;
 
     return {
@@ -136,7 +136,7 @@ export async function isAuthenticated() {
 export async function recordDailyLogin(userId: string) {
   try {
     const today = todayIsoDate();
-    const userRef = db.collection("users").doc(userId);
+    const userRef = getDb().collection("users").doc(userId);
 
     const userData = await readUser(userId);
 
