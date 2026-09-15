@@ -1,6 +1,7 @@
-import { interviewCovers, mappings } from "@/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+
+import { interviewCovers, mappings } from "@/constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -35,7 +36,7 @@ export const getTechLogos = async (techArray: string[]) => {
     logoURLs.map(async ({ tech, url }) => ({
       tech,
       url: (await checkIconExists(url)) ? url : "/tech.svg",
-    }))
+    })),
   );
 
   return results;

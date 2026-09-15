@@ -6,7 +6,7 @@ interface Interview {
   role: string;
   type: string;
   techstack: string[];
-  createdAt: any;
+  createdAt?: string;
 }
 
 interface AllInterviewsSectionProps {
@@ -25,17 +25,17 @@ export default function AllInterviewsSection({
   totalPages,
 }: AllInterviewsSectionProps) {
   // Combine both interview arrays
-  const combinedInterviews = [...(userInterviews || []), ...(allInterviews || [])];
-  
+  const combinedInterviews = [...userInterviews, ...allInterviews];
+
   // Remove duplicates based on interview ID
-  const uniqueInterviews = combinedInterviews.filter((interview, index, self) => 
-    index === self.findIndex(i => i.id === interview.id)
+  const uniqueInterviews = combinedInterviews.filter(
+    (interview, index, self) => index === self.findIndex((i) => i.id === interview.id),
   );
 
   // Sort by creation date (newest first)
   const sortedInterviews = uniqueInterviews.sort((a, b) => {
-    const dateA = new Date(a.createdAt || 0).getTime();
-    const dateB = new Date(b.createdAt || 0).getTime();
+    const dateA = new Date(a.createdAt ?? 0).getTime();
+    const dateB = new Date(b.createdAt ?? 0).getTime();
     return dateB - dateA;
   });
 
@@ -45,18 +45,21 @@ export default function AllInterviewsSection({
   const currentPageInterviews = sortedInterviews.slice(startIndex, endIndex);
 
   return (
-    <section id="all-interviews-section" className="flex flex-col gap-6 mt-8 max-w-5xl mx-auto animate-fadeIn">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-2 h-8 bg-primary-200 rounded-full" />
-        <h2 className="text-2xl md:text-3xl font-bold text-primary-100 tracking-tight">
+    <section
+      id="all-interviews-section"
+      className="mx-auto mt-8 flex max-w-5xl animate-fadeIn flex-col gap-6"
+    >
+      <div className="mb-2 flex items-center gap-3">
+        <div className="h-8 w-2 rounded-full bg-primary-200" />
+        <h2 className="text-2xl font-bold tracking-tight text-primary-100 md:text-3xl">
           All Interviews
         </h2>
       </div>
-      
+
       <div className="interviews-section">
         {currentPageInterviews.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {currentPageInterviews.map((interview) => (
                 <InterviewCard
                   key={interview.id}
@@ -69,7 +72,7 @@ export default function AllInterviewsSection({
                 />
               ))}
             </div>
-            
+
             {totalPages > 1 && (
               <PaginationControls
                 currentPage={currentPage}

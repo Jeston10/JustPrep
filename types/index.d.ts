@@ -2,11 +2,11 @@ interface Feedback {
   id: string;
   interviewId: string;
   totalScore: number;
-  categoryScores: Array<{
+  categoryScores: {
     name: string;
     score: number;
     comment: string;
-  }>;
+  }[];
   strengths: string[];
   areasForImprovement: string[];
   finalAssessment: string;
@@ -50,15 +50,6 @@ interface InterviewCardProps {
   type: string;
   techstack: string[];
   createdAt?: string;
-}
-
-interface AgentProps {
-  userName: string;
-  userId?: string;
-  id?: string;
-  feedbackId?: string;
-  type: "generate" | "interview";
-  questions?: string[];
 }
 
 interface RouteParams {

@@ -24,11 +24,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
-        with: { version: ${{ env.PNPM_VERSION }} }
+        with:
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }}, cache: pnpm }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
@@ -45,9 +49,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: ${{ env.PNPM_VERSION }} }
+        with:
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }}, cache: pnpm }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test -- --coverage
       - name: Integration (Firestore emulator)
@@ -62,9 +69,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: ${{ env.PNPM_VERSION }} }
+        with:
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }}, cache: pnpm }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit --audit-level=high
       - run: pnpm build
@@ -80,9 +90,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: ${{ env.PNPM_VERSION }} }
+        with:
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }}, cache: pnpm }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm dlx playwright install --with-deps chromium webkit
       - run: pnpm dlx firebase-tools emulators:exec --only auth,firestore "pnpm test:e2e"

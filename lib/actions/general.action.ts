@@ -1,10 +1,10 @@
 "use server";
 
-import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
+import { generateObject } from "ai";
 
-import { db } from "@/firebase/admin";
 import { feedbackSchema } from "@/constants";
+import { db } from "@/firebase/admin";
 
 export async function createFeedback(params: CreateFeedbackParams) {
   const { interviewId, userId, transcript, feedbackId } = params;
@@ -13,7 +13,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
     const formattedTranscript = transcript
       .map(
         (sentence: { role: string; content: string }) =>
-          `- ${sentence.role}: ${sentence.content}\n`
+          `- ${sentence.role}: ${sentence.content}\n`,
       )
       .join("");
 
@@ -60,8 +60,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
     await feedbackRef.set(feedback);
 
     return { success: true, feedbackId: feedbackRef.id };
-  } catch (error) {
-    console.error("Error saving feedback:", error);
+  } catch {
     return { success: false };
   }
 }
@@ -73,7 +72,7 @@ export async function getInterviewById(id: string): Promise<Interview | null> {
 }
 
 export async function getFeedbackByInterviewId(
-  params: GetFeedbackByInterviewIdParams
+  params: GetFeedbackByInterviewIdParams,
 ): Promise<Feedback | null> {
   const { interviewId, userId } = params;
 
@@ -91,7 +90,7 @@ export async function getFeedbackByInterviewId(
 }
 
 export async function getLatestInterviews(
-  params: GetLatestInterviewsParams
+  params: GetLatestInterviewsParams,
 ): Promise<Interview[] | null> {
   const { userId, limit = 20 } = params;
 
@@ -109,9 +108,7 @@ export async function getLatestInterviews(
   })) as Interview[];
 }
 
-export async function getInterviewsByUserId(
-  userId: string
-): Promise<Interview[] | null> {
+export async function getInterviewsByUserId(userId: string): Promise<Interview[] | null> {
   const interviews = await db
     .collection("interviews")
     .where("userId", "==", userId)

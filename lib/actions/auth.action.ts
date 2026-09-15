@@ -1,10 +1,19 @@
 "use server";
 
-import { auth, db } from "@/firebase/admin";
 import { cookies } from "next/headers";
+
+import { auth, db } from "@/firebase/admin";
 
 // Session duration (1 week)
 const SESSION_DURATION = 60 * 60 * 24 * 7;
+
+/** Subset of the Firestore user document used by the login-streak helpers. */
+type StoredUser = Omit<User, "id">;
+
+const readUser = async (userId: string): Promise<StoredUser | undefined> => {
+  const snapshot = await db.collection("users").doc(userId).get();
+  return snapshot.data() as StoredUser | undefined;
+};
 
 // Set session cookie
 export async function setSessionCookie(idToken: string) {
@@ -41,8 +50,6 @@ export async function signUp(params: SignUpParams) {
     await db.collection("users").doc(uid).set({
       name,
       email,
-      // profileURL,
-      // resumeURL,
     });
 
     return {
@@ -50,8 +57,6 @@ export async function signUp(params: SignUpParams) {
       message: "Account created successfully. Please sign in.",
     };
   } catch (error: unknown) {
-    console.error("Error creating user:", error);
-
     // Handle Firebase specific errors
     if (typeof error === "object" && error !== null && "code" in error) {
       if ((error as { code?: string }).code === "auth/email-already-exists") {
@@ -73,17 +78,15 @@ export async function signIn(params: SignInParams) {
   const { email, idToken } = params;
 
   try {
+    // Throws if the user does not exist.
     const userRecord = await auth.getUserByEmail(email);
-    if (!userRecord)
-      return {
-        success: false,
-        message: "User does not exist. Create an account.",
-      };
 
     await setSessionCookie(idToken);
-    
+
     // Track daily login
     await recordDailyLogin(userRecord.uid);
+
+    return { success: true, message: "Signed in." };
   } catch {
     return {
       success: false,
@@ -104,36 +107,19 @@ export async function getCurrentUser(): Promise<User | null> {
   const cookieStore = await cookies();
 
   const sessionCookie = cookieStore.get("session")?.value;
-  console.log("🔍 [getCurrentUser] Session Cookie:", sessionCookie);
-
-  if (!sessionCookie) {
-    console.log("❌ No session cookie found in request headers.");
-    return null;
-  }
+  if (!sessionCookie) return null;
 
   try {
     const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
-    console.log("✅ Session verified. Decoded claims:", decodedClaims);
 
-    const userRecord = await db
-      .collection("users")
-      .doc(decodedClaims.uid)
-      .get();
-
-    if (!userRecord.exists) {
-      console.log("❌ User record not found in Firestore.");
-      return null;
-    }
-
-    const userData = userRecord.data();
-    console.log("✅ User data from Firestore:", userData);
+    const userRecord = await db.collection("users").doc(decodedClaims.uid).get();
+    if (!userRecord.exists) return null;
 
     return {
-      ...userData,
+      ...(userRecord.data() as StoredUser),
       id: userRecord.id,
-    } as User;
-  } catch (error) {
-    console.error("❌ Error verifying session cookie:", error);
+    };
+  } catch {
     return null;
   }
 }
@@ -147,80 +133,55 @@ export async function isAuthenticated() {
 // Record daily login for streak tracking
 export async function recordDailyLogin(userId: string) {
   try {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const today = todayIsoDate();
     const userRef = db.collection("users").doc(userId);
-    
-    // Get current user data
-    const userDoc = await userRef.get();
-    const userData = userDoc.data();
-    
+
+    const userData = await readUser(userId);
+
     // Initialize or update daily login tracking
-    const dailyLogins = userData?.dailyLogins || {};
+    const dailyLogins: Record<string, boolean> = userData?.dailyLogins ?? {};
     const lastLoginDate = userData?.lastLoginDate;
-    
+
     // Only record if it's a new day
     if (lastLoginDate !== today) {
       dailyLogins[today] = true;
-      
+
       // Calculate new streak
       const newStreak = calculateLoginStreak(dailyLogins, today);
-      
+
       await userRef.update({
         dailyLogins,
         lastLoginDate: today,
-        loginStreak: newStreak
+        loginStreak: newStreak,
       });
-      
-      console.log(`✅ Daily login recorded for user ${userId}. New streak: ${newStreak} days`);
-    } else {
-      console.log(`ℹ️ User ${userId} already logged in today`);
     }
-  } catch (error) {
-    console.error("Error recording daily login:", error);
+  } catch {
+    // Streak tracking is best-effort; never block sign-in on it.
   }
 }
+
+const todayIsoDate = () => new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
 // Calculate current login streak
 function calculateLoginStreak(dailyLogins: Record<string, boolean>, today: string): number {
   let streak = 0;
-  let currentDate = new Date(today);
-  
+  const currentDate = new Date(today);
+
   // Check consecutive days backwards from today
-  while (true) {
-    const dateStr = currentDate.toISOString().split('T')[0];
-    if (dailyLogins[dateStr]) {
-      streak++;
-      // Move to previous day
-      currentDate.setDate(currentDate.getDate() - 1);
-    } else {
-      break;
-    }
+  while (dailyLogins[currentDate.toISOString().slice(0, 10)]) {
+    streak++;
+    currentDate.setDate(currentDate.getDate() - 1);
   }
-  
+
   return streak;
 }
 
 // Check if user has logged in today
 export async function hasLoggedInToday(userId: string): Promise<boolean> {
   try {
-    const today = new Date().toISOString().split('T')[0];
-    console.log("🔍 [hasLoggedInToday] Checking for user:", userId, "on date:", today);
-    
-    const userDoc = await db.collection("users").doc(userId).get();
-    const userData = userDoc.data();
-    
-    console.log("📊 [hasLoggedInToday] User data:", {
-      lastLoginDate: userData?.lastLoginDate,
-      loginStreak: userData?.loginStreak,
-      hasDailyLogins: !!userData?.dailyLogins
-    });
-    
-    const hasLoggedIn = userData?.lastLoginDate === today;
-    console.log("✅ [hasLoggedInToday] Result:", hasLoggedIn);
-    
-    return hasLoggedIn;
-  } catch (error) {
-    console.error("❌ [hasLoggedInToday] Error:", error);
+    const userData = await readUser(userId);
+    return userData?.lastLoginDate === todayIsoDate();
+  } catch {
     return false;
   }
 }
@@ -228,13 +189,9 @@ export async function hasLoggedInToday(userId: string): Promise<boolean> {
 // Get user's login streak
 export async function getUserLoginStreak(userId: string): Promise<number> {
   try {
-    const userDoc = await db.collection("users").doc(userId).get();
-    const userData = userDoc.data();
-    
-    return userData?.loginStreak || 0;
-  } catch (error) {
-    console.error("Error getting login streak:", error);
+    const userData = await readUser(userId);
+    return userData?.loginStreak ?? 0;
+  } catch {
     return 0;
   }
 }
-
