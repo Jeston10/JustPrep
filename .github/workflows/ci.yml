@@ -57,6 +57,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-java@v4 # Firebase emulators require JDK 21+
+        with:
+          distribution: temurin
+          java-version: "21"
       - run: pnpm test -- --coverage
       - name: Integration (Firestore emulator)
         run: pnpm dlx firebase-tools emulators:exec --only auth,firestore --project demo-justprep "pnpm test:integration"
@@ -92,6 +96,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-java@v4 # Firebase emulators require JDK 21+
+        with:
+          distribution: temurin
+          java-version: "21"
       - run: pnpm exec playwright install --with-deps chromium
       # Demo values: the Firebase web config is public by design and the emulator accepts any project id.
       # Server secrets are absent, so SKIP_ENV_VALIDATION=1; nothing in the e2e suite needs them yet.
