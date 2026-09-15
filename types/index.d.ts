@@ -2,11 +2,11 @@ interface Feedback {
   id: string;
   interviewId: string;
   totalScore: number;
-  categoryScores: Array<{
+  categoryScores: {
     name: string;
     score: number;
     comment: string;
-  }>;
+  }[];
   strengths: string[];
   areasForImprovement: string[];
   finalAssessment: string;
@@ -29,7 +29,7 @@ interface CreateFeedbackParams {
   interviewId: string;
   userId: string;
   transcript: { role: string; content: string }[];
-  feedbackId?: string;
+  feedbackId?: string | undefined;
 }
 
 interface User {
@@ -44,26 +44,17 @@ interface User {
 }
 
 interface InterviewCardProps {
-  interviewId?: string;
-  userId?: string;
+  interviewId?: string | undefined;
+  userId?: string | undefined;
   role: string;
   type: string;
   techstack: string[];
-  createdAt?: string;
+  createdAt?: string | undefined;
 }
 
-interface AgentProps {
-  userName: string;
-  userId?: string;
-  id?: string;
-  feedbackId?: string;
-  type: "generate" | "interview";
-  questions?: string[];
-}
-
-interface RouteParams {
-  params: Promise<Record<string, string>>;
-  searchParams: Promise<Record<string, string>>;
+interface RouteParams<TParams extends Record<string, string> = Record<string, string>> {
+  params: Promise<TParams>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }
 
 interface GetFeedbackByInterviewIdParams {

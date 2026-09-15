@@ -1,4 +1,5 @@
-import { Controller, Control, FieldValues, Path } from "react-hook-form";
+import { Controller, type Control, type FieldValues, type Path } from "react-hook-form";
+
 import { Input } from "@/components/ui/input";
 
 interface FormFieldProps<T extends FieldValues> {
@@ -23,14 +24,9 @@ const FormField = <T extends FieldValues>({
       render={({ field, fieldState }) => (
         <div className="mb-4">
           <label className="label">{label}</label>
-          <Input
-            className="input"
-            type={type}
-            placeholder={placeholder}
-            {...field}
-          />
+          <Input className="input" type={type} placeholder={placeholder} {...field} />
           {fieldState.error && (
-            <span className="text-red-500 text-xs">{fieldState.error.message}</span>
+            <span className="text-xs text-red-500">{fieldState.error.message}</span>
           )}
         </div>
       )}

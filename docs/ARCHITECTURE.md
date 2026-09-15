@@ -158,7 +158,7 @@ Indexes and rules are committed under `firebase/`. Every query used by a reposit
 
 ## 7. Cross-cutting
 
-- **Auth:** `middleware.ts` gates `(app)` routes by cookie presence (cheap); `requireUser()` verifies the cookie (cached per request via `React.cache`) and is the real gate.
+- **Auth:** `proxy.ts` (Next 16 name for middleware; Node runtime only) gates `(app)` routes by cookie presence (cheap); `requireUser()` verifies the cookie (cached per request via `React.cache`) and is the real gate.
 - **Caching:** public pages static; dashboard `dynamic`; lists use cursor pagination via `nuqs` `?cursor=`; provider responses for question generation cached in Firestore by input hash.
 - **Errors:** `error.tsx` per route group; `AppError` → toast/inline; Sentry captures with user id only.
 - **Observability:** every service call logs `{ traceId, userId, op, durationMs, provider?, model?, tokens? }`.

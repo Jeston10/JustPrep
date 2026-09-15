@@ -2,10 +2,15 @@
 # Until then this workflow is expected to fail on the legacy codebase; do not weaken it to make it pass.
 name: CI
 
+# Branching model (PROCESS.md §Branching): PR branch → milestone/* → dev → main.
+# The pipeline runs on every PR (any base) and on pushes to the three integration tiers.
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+      - dev
+      - "milestone/**"
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -16,7 +21,7 @@ permissions:
 
 env:
   NODE_VERSION: 22
-  PNPM_VERSION: 10
+  # pnpm version comes from package.json#packageManager (pnpm/action-setup reads it).
 
 jobs:
   static:
@@ -24,15 +29,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
-        with: { version: ${{ env.PNPM_VERSION }} }
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }}, cache: pnpm }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm dlx knip
+      - run: pnpm exec knip
       - name: Secret scan
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -45,15 +52,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: ${{ env.PNPM_VERSION }} }
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }}, cache: pnpm }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-java@v4 # Firebase emulators require JDK 21+
+        with:
+          distribution: temurin
+          java-version: "21"
       - run: pnpm test -- --coverage
       - name: Integration (Firestore emulator)
-        run: pnpm dlx firebase-tools emulators:exec --only auth,firestore "pnpm test:integration"
-        env:
-          FIREBASE_PROJECT_ID: demo-justprep
+        run: pnpm dlx firebase-tools emulators:exec --only auth,firestore --project demo-justprep "pnpm test:integration"
 
   build:
     name: Build · Audit · Size
@@ -62,15 +72,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: ${{ env.PNPM_VERSION }} }
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }}, cache: pnpm }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit --audit-level=high
       - run: pnpm build
         env:
           SKIP_ENV_VALIDATION: "1"
-      - run: pnpm dlx size-limit
+      - run: pnpm exec size-limit
 
   e2e:
     name: E2E · Responsive · A11y
@@ -80,15 +91,39 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: ${{ env.PNPM_VERSION }} }
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }}, cache: pnpm }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm dlx playwright install --with-deps chromium webkit
-      - run: pnpm dlx firebase-tools emulators:exec --only auth,firestore "pnpm test:e2e"
+      - uses: actions/setup-java@v4 # Firebase emulators require JDK 21+
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: pnpm exec playwright install --with-deps chromium
+      # Demo values: the Firebase web config is public by design and the emulator accepts any project id.
+      # Server secrets are absent, so SKIP_ENV_VALIDATION=1; nothing in the e2e suite needs them yet.
+      - run: pnpm build
         env:
-          FIREBASE_PROJECT_ID: demo-justprep
           SKIP_ENV_VALIDATION: "1"
+          NEXT_PUBLIC_FIREBASE_API_KEY: demo-api-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-justprep.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-justprep
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:demo"
+          NEXT_PUBLIC_VAPI_WEB_TOKEN: demo
+          NEXT_PUBLIC_VAPI_WORKFLOW_ID: demo
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+      - run: pnpm dlx firebase-tools emulators:exec --only auth,firestore --project demo-justprep "pnpm test:e2e"
+        env:
+          SKIP_ENV_VALIDATION: "1"
+          NEXT_PUBLIC_FIREBASE_API_KEY: demo-api-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-justprep.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-justprep
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:demo"
+          NEXT_PUBLIC_VAPI_WEB_TOKEN: demo
+          NEXT_PUBLIC_VAPI_WORKFLOW_ID: demo
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          CI: "true"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
