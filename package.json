@@ -48,7 +48,7 @@
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20.19.2",
+    "@types/node": "^22.20.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^9",
@@ -69,6 +69,9 @@
       "protobufjs",
       "sharp",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "uuid@<11.1.1": ">=11.1.1"
+    }
   }
 }
