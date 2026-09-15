@@ -1,0 +1,41 @@
+name: Bug report
+description: Something is broken
+labels: ["type:fix", "triage"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Expected vs actual, with steps to reproduce.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Route / component
+      placeholder: /interviews/abc/attempts/xyz · features/attempt/components/VoiceSession.tsx
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [auth, interview, attempt, feedback, voice, llm, storage, ui, infra, docs]
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device / browser / viewport
+      placeholder: iPhone 15 · Safari 18 · 393×852
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: P0 = security or data loss.
+      options: [p0, p1, p2]
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Redact tokens, emails, and transcripts.

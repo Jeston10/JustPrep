@@ -1,0 +1,34 @@
+name: Feature request
+description: Propose a capability or improvement
+labels: ["type:feat", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Who is the user, what are they trying to do, what stops them today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What we would build. Reference docs/IMPLEMENTATION_PLAN.md phase if applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: User-observable, testable statements.
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints checked
+      options:
+        - label: Works within the free-only stack (docs/TECH_STACK.md)
+        - label: Follows the design system (docs/DESIGN_SYSTEM.md)
+        - label: Security implications considered (docs/SECURITY.md)
+        - label: Needs an ADR

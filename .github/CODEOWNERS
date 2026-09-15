@@ -1,0 +1,12 @@
+# Review routing. Order matters; last match wins.
+*                     @Jeston10
+
+# Security-sensitive paths require explicit owner review
+/server/auth/         @Jeston10
+/server/ratelimit/    @Jeston10
+/firebase/            @Jeston10
+/config/env.ts        @Jeston10
+/middleware.ts        @Jeston10
+/docs/SECURITY.md     @Jeston10
+/docs/GUARDRAILS.md   @Jeston10
+/docs/decisions/      @Jeston10

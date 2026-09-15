@@ -1,49 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JustPrep
 
-## Getting Started
+AI mock-interview practice that actually changes how you perform. Create an interview for a specific role, level, stack, and company; take it in text or voice; get per-question feedback with evidence from your own transcript, model answers, and a concrete next drill. Every attempt is kept, so progress is visible.
 
-First, run the development server:
+Built to a world-class standard on a **free-only** infrastructure budget.
+
+## Status
+
+Rebuild in progress. The engineering handbook is complete; implementation follows `docs/IMPLEMENTATION_PLAN.md` phase by phase. The legacy prototype (v0.1) still lives in `app/`, `components/`, and `lib/` until each phase replaces it.
+
+## Read first
+
+| | |
+|---|---|
+| `AGENTS.md` | Operating manual for engineers and AI agents — start here |
+| `docs/IMPLEMENTATION_PLAN.md` · `docs/MILESTONES.md` | What to build, in order — phases, then PR-level breakdown with file migration map |
+| `docs/GUARDRAILS.md` | Hard rules (cost, security, architecture, design, process) |
+| `docs/RISKS.md` | Risk register and per-phase watch-list |
+| `docs/ARCHITECTURE.md` | Layers, folder layout, SOLID mapping, data model v2 |
+| `docs/TECH_STACK.md` | Approved free services and libraries; voice and LLM routing |
+| `docs/SECURITY.md` | Threat model and mandatory controls |
+| `docs/DESIGN_SYSTEM.md` | Tokens, components, motion, anti-AI-look checklist |
+| `docs/COMPONENT_LIBRARY.md` | shadcn + 21st.dev + motion sourcing and adaptation |
+| `docs/RESPONSIVE.md` | Device matrix and responsive rules |
+| `docs/CODING_STANDARDS.md` · `docs/QUALITY.md` | Code style, tests, budgets |
+| `docs/decisions/` | ADRs |
+| `docs/ANALYSIS_AND_ROADMAP.md` | The audit of the legacy codebase |
+
+## Stack (target)
+
+Next.js (App Router) · React · TypeScript strict · Tailwind v4 · shadcn/ui + 21st.dev · motion · Firebase Auth + Firestore (free) · Vercel AI SDK with Gemini (primary) and Groq (fallback) · Gemini Live + Web Speech API + on-device TTS for voice · Cloudflare R2 · Upstash · Sentry · PostHog · Resend · Vitest · Playwright · pnpm · lefthook · GitHub Actions.
+
+## Local development (after Phase 0)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local
+pnpm dlx firebase-tools emulators:start --only auth,firestore
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+See `CONTRIBUTING.md` for branching, commits, and the PR checklist. Security reports: `SECURITY.md`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Licence
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-# JustPrep_Ai_interview
-JustPrep Ai Interviewer gets you ready with your interview anytime, anywhere just open, ask and Improve your success rate for cracking any job interview.
-
-## Features
-
-### Daily Login Star
-- **Daily Login Tracking**: The app tracks your daily login activity and displays a star icon that lights up when you sign in each day
-- **Login Streak**: Shows your current consecutive login streak to encourage consistent practice
-- **Visual Feedback**: The star icon animates and glows when you've logged in today, providing immediate visual feedback
-- **Motivational Messages**: Displays encouraging messages based on your streak length to keep you motivated
-
-The daily login star appears in the right sidebar below the news section, providing a gamified element to encourage regular practice and engagement with the platform.
+Private. All rights reserved.
