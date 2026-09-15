@@ -19,6 +19,7 @@ import {
   destroySession as destroySessionCore,
   readSession,
   readSessionChecked,
+  type SessionAuth,
   type SessionCookieStore,
   type SessionDeps,
 } from "./session-core";
@@ -38,12 +39,21 @@ const nextCookieStore = async (): Promise<SessionCookieStore> => {
   };
 };
 
-// Read the cookie store first: `cookies()` is what opts a route into dynamic rendering, and it must
-// run before the Admin SDK initialises, or a build-time prerender would try to load credentials.
-const deps = async (): Promise<SessionDeps> => {
-  const cookieStore = await nextCookieStore();
-  return { auth: getAdminAuth(), cookies: cookieStore, isProduction };
+// Vendor calls are resolved at call time, so the Admin SDK (and its credentials) is only touched
+// when there is actually a cookie to verify or a session to create/revoke — never during a
+// build-time prerender or an anonymous request.
+const lazyAdminAuth: SessionAuth = {
+  createSessionCookie: (idToken, options) => getAdminAuth().createSessionCookie(idToken, options),
+  verifySessionCookie: (cookie, checkRevoked) =>
+    getAdminAuth().verifySessionCookie(cookie, checkRevoked),
+  revokeRefreshTokens: (uid) => getAdminAuth().revokeRefreshTokens(uid),
 };
+
+const deps = async (): Promise<SessionDeps> => ({
+  auth: lazyAdminAuth,
+  cookies: await nextCookieStore(),
+  isProduction,
+});
 
 export interface SessionUser {
   id: string;
