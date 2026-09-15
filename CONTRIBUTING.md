@@ -13,6 +13,10 @@ pnpm dev
 
 `lefthook install` runs automatically on `pnpm install` and enables the git hooks.
 
+Optional but recommended: install the [gitleaks](https://github.com/gitleaks/gitleaks) binary (`winget install gitleaks` / `scoop install gitleaks` / `brew install gitleaks`) so secrets are caught at commit time; CI runs it on every push either way.
+
+If a globally installed older `pnpm` shadows the pinned version, run commands through `corepack pnpm …` or upgrade the global install.
+
 ## Branches and commits
 
 - Branch from `main`: `feat/…`, `fix/…`, `refactor/…`, `docs/…`, `chore/…`, `security/…`.
