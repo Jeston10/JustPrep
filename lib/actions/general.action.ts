@@ -1,7 +1,7 @@
 "use server";
 
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateObject } from "ai";
+import { createGoogle } from "@ai-sdk/google";
+import { generateText, Output } from "ai";
 
 import { env } from "@/config/env";
 
@@ -9,7 +9,7 @@ import { feedbackSchema } from "@/constants";
 import { db } from "@/firebase/admin";
 
 // Provider factory moves to server/llm in P2.3.
-const google = createGoogleGenerativeAI({ apiKey: env.GEMINI_API_KEY });
+const google = createGoogle({ apiKey: env.GEMINI_API_KEY });
 
 export async function createFeedback(params: CreateFeedbackParams) {
   const { interviewId, userId, transcript, feedbackId } = params;
@@ -22,11 +22,9 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
-    const { object } = await generateObject({
-      model: google("gemini-2.0-flash-001", {
-        structuredOutputs: false,
-      }),
-      schema: feedbackSchema,
+    const { output: object } = await generateText({
+      model: google("gemini-2.0-flash-001"),
+      output: Output.object({ schema: feedbackSchema }),
       prompt: `
         You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
         Transcript:

@@ -23,12 +23,12 @@
     "prepare": "lefthook install"
   },
   "dependencies": {
-    "@ai-sdk/google": "^1.2.19",
+    "@ai-sdk/google": "^4.0.71",
     "@hookform/resolvers": "^5.1.0",
     "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.13.11",
     "@vapi-ai/web": "^2.3.5",
-    "ai": "^4.3.16",
+    "ai": "^7.0.102",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
