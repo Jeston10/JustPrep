@@ -2,10 +2,15 @@
 # Until then this workflow is expected to fail on the legacy codebase; do not weaken it to make it pass.
 name: CI
 
+# Branching model (PROCESS.md §Branching): PR branch → milestone/* → dev → main.
+# The pipeline runs on every PR (any base) and on pushes to the three integration tiers.
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+      - dev
+      - "milestone/**"
 
 concurrency:
   group: ci-${{ github.ref }}

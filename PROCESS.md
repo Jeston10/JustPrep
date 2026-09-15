@@ -2,11 +2,34 @@
 
 How work flows through this repository, modelled on GitLab's engineering process at small scale.
 
+## Branching and promotion
+
+```
+chore/… feat/… fix/… security/…      one PR each
+        │  PR (CI green, template complete)
+        ▼
+milestone/p<N>-<name>                 one per phase in docs/MILESTONES.md; created from dev
+        │  PR when the phase exit criteria are met (CI green on the milestone branch)
+        ▼
+dev                                   integration; deployed to the preview environment; soak-tested
+        │  PR only from dev (promotion guard) with CI green; squash or merge commit, tagged
+        ▼
+main                                  production; protected; never receives direct pushes
+```
+
+Rules:
+- `main` and `dev` are protected: PRs only, required checks (`CI` jobs + `Promotion guard`), no force-push, linear history on `main`.
+- Milestone branches are `milestone/p0-toolchain`, `milestone/p1-security`, … (names in `docs/MILESTONES.md`). They are deleted after their PR into `dev` merges; the next milestone branch is cut from the updated `dev`.
+- Work branches are cut from the current milestone branch and merged back into it by PR. They never target `dev` or `main`.
+- `hotfix/*` may target `dev` directly (and is then promoted to `main` through `dev`); it is the only exception.
+- Every push to `dev`, `milestone/**`, and `main` runs the full pipeline; PRs run it against the merge result.
+- A phase is "achieved" when its milestone branch has merged into `dev`, CI is green on `dev`, and the manual soak (release checklist in `docs/QUALITY.md` §5) passes; promotion to `main` then tags the release.
+
 ## Cadence
 
 - **Milestones** = phases in `docs/IMPLEMENTATION_PLAN.md`. Each has a GitHub milestone and a tracking issue with the exit criteria as a checklist.
 - **Iterations** are weekly. Monday: pick issues for the week from the active phase; Friday: release if the exit criteria for the phase are met, otherwise tag a pre-release.
-- **Releases**: SemVer tags (`v0.x.y` until Phase 5 completes, then `v1.0.0`). `CHANGELOG.md` is updated per release from Conventional Commits.
+- **Releases**: SemVer tags (`v0.x.y` until Phase 5 completes, then `v1.0.0`) applied on `main` when `dev` is promoted. `CHANGELOG.md` is updated per release from Conventional Commits.
 
 ## Issue lifecycle
 

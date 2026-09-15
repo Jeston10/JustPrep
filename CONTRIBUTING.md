@@ -19,7 +19,7 @@ If a globally installed older `pnpm` shadows the pinned version, run commands th
 
 ## Branches and commits
 
-- Branch from `main`: `feat/…`, `fix/…`, `refactor/…`, `docs/…`, `chore/…`, `security/…`.
+- Branch from the **current milestone branch** (`milestone/p<N>-<name>`, see `docs/MILESTONES.md`), never from `main`: `feat/…`, `fix/…`, `refactor/…`, `docs/…`, `chore/…`, `security/…`. PRs target the milestone branch. Promotion is milestone → `dev` → `main` (see `PROCESS.md`).
 - Conventional Commits. Examples:
   - `feat(attempt): stream interviewer turns in text mode`
   - `fix(auth): await cookies() in profile update`
@@ -34,7 +34,7 @@ If a globally installed older `pnpm` shadows the pinned version, run commands th
 4. Server changes: tick the checklist in `docs/SECURITY.md` §3.
 5. Architecture, vendor, data-model, or token changes: include an ADR in `docs/decisions/`.
 6. Update docs in the same PR. Add a `CHANGELOG.md` entry under *Unreleased*.
-7. Squash-merge once approved.
+7. Squash-merge into the milestone branch once approved. Milestone → `dev` and `dev` → `main` promotions are merge commits so history per phase stays traceable.
 
 ## Code review standards
 
