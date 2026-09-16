@@ -67,6 +67,14 @@ const ensureInterview = async () => {
   return id;
 };
 
-await ensureUser();
-const interviewId = await ensureInterview();
-process.stdout.write(`seeded ${projectId}: user ${DEMO_USER.email}, interview ${interviewId}\n`);
+// Scripts are compiled as CommonJS by tsx (no "type": "module"), so no top-level await.
+const main = async () => {
+  await ensureUser();
+  const interviewId = await ensureInterview();
+  process.stdout.write(`seeded ${projectId}: user ${DEMO_USER.email}, interview ${interviewId}\n`);
+};
+
+main().catch((error: unknown) => {
+  process.stderr.write(`seed failed: ${error instanceof Error ? error.message : String(error)}\n`);
+  process.exitCode = 1;
+});
