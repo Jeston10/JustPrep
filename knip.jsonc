@@ -1,3 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
+  // pino loads its pretty transport by name (string), invisible to static analysis.
+  "ignoreDependencies": ["pino-pretty"],
+  // Helpers used only inside their own module are not dead code.
+  "ignoreExportsUsedInFile": true,
 }

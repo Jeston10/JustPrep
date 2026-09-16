@@ -2,13 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getCurrentUser } from "@/server/auth/session";
+
 import AllInterviewsSection from "@/components/AllInterviewsSection";
 import HighPayingJobsSection from "@/components/HighPayingJobsSection";
 import HomeAnalyticsSection from "@/components/HomeAnalyticsSection";
 import NewsSection from "@/components/NewsSection";
 import { Button } from "@/components/ui/button";
 
-import { getCurrentUser, recordDailyLogin } from "@/lib/actions/auth.action";
+import { recordDailyLogin } from "@/lib/actions/auth.action";
 import {
   getInterviewsByUserId,
   getLatestInterviews,

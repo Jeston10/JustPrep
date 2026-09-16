@@ -11,6 +11,8 @@ export default defineConfig({
   },
   test: {
     passWithNoTests: true,
+    // Unit tests never hold secrets; config/env.ts is exercised by every build instead.
+    env: { SKIP_ENV_VALIDATION: "1" },
     projects: [
       {
         extends: true,
