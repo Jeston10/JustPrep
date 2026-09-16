@@ -7,9 +7,12 @@ Thanks for working on JustPrep. Start with `AGENTS.md`, then the documents it li
 ```bash
 pnpm install --frozen-lockfile
 cp .env.example .env.local       # fill in values (see comments)
-pnpm dlx firebase-tools emulators:start --only auth,firestore   # in a second terminal
-pnpm dev
+pnpm dev                          # against the real Firebase project in .env.local
+# or, with no service account needed (requires JDK 21+ on PATH):
+pnpm dev:emulators                # Auth + Firestore emulators, seeded demo account, then next dev
 ```
+
+Emulator demo account: `demo@justprep.test` / `demo-password-123` (see `scripts/seed-emulator.ts`). Rules and indexes live in `firebase/` and are deployed with `pnpm exec firebase deploy --only firestore`.
 
 `lefthook install` runs automatically on `pnpm install` and enables the git hooks.
 

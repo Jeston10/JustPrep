@@ -25,4 +25,4 @@ pre-push:
     typecheck:
       run: node_modules/.bin/tsc --noEmit
     unit:
-      run: node_modules/.bin/vitest run
+      run: node_modules/.bin/vitest run --project unit

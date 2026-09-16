@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// All data access goes through firebase-admin in server/ (docs/SECURITY.md §2.7).
+// The client SDK is used for Authentication only, so clients may read or write nothing.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
