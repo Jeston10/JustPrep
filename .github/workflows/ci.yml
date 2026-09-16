@@ -63,7 +63,7 @@ jobs:
           java-version: "21"
       - run: pnpm test -- --coverage
       - name: Integration (Firestore emulator)
-        run: pnpm dlx firebase-tools emulators:exec --only auth,firestore --project demo-justprep "pnpm test:integration"
+        run: pnpm exec firebase emulators:exec --only auth,firestore --project demo-justprep "pnpm test:integration"
 
   build:
     name: Build · Audit · Size
@@ -101,8 +101,10 @@ jobs:
           distribution: temurin
           java-version: "21"
       - run: pnpm exec playwright install --with-deps chromium
-      # Demo values: the Firebase web config is public by design and the emulator accepts any project id.
-      # Server secrets are absent, so SKIP_ENV_VALIDATION=1; nothing in the e2e suite needs them yet.
+      # The app runs in emulator mode: firebase-admin needs no service account, the browser Auth SDK
+      # targets the Auth emulator, and the seed script creates the demo account. Public web-config
+      # values are placeholders (the emulator accepts any project id). NEXT_PUBLIC_* are inlined at
+      # build time, so they are set on the build step too.
       - run: pnpm build
         env:
           SKIP_ENV_VALIDATION: "1"
@@ -110,20 +112,23 @@ jobs:
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-justprep.firebaseapp.com
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-justprep
           NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:demo"
+          NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST: 127.0.0.1:9099
           NEXT_PUBLIC_VAPI_WEB_TOKEN: demo
           NEXT_PUBLIC_VAPI_WORKFLOW_ID: demo
           NEXT_PUBLIC_APP_URL: http://localhost:3000
-      - run: pnpm dlx firebase-tools emulators:exec --only auth,firestore --project demo-justprep "pnpm test:e2e"
+      - run: pnpm exec firebase emulators:exec --only auth,firestore --project demo-justprep "pnpm seed:emulators && pnpm test:e2e"
         env:
-          SKIP_ENV_VALIDATION: "1"
+          CI: "true"
+          FIREBASE_PROJECT_ID: demo-justprep
+          GEMINI_API_KEY: demo-not-used-in-e2e
           NEXT_PUBLIC_FIREBASE_API_KEY: demo-api-key
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-justprep.firebaseapp.com
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-justprep
           NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:demo"
+          NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST: 127.0.0.1:9099
           NEXT_PUBLIC_VAPI_WEB_TOKEN: demo
           NEXT_PUBLIC_VAPI_WORKFLOW_ID: demo
           NEXT_PUBLIC_APP_URL: http://localhost:3000
-          CI: "true"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
