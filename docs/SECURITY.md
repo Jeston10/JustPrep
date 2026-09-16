@@ -74,10 +74,10 @@ Threat model, controls, and the checklist every PR touching the server must sati
 - Audio recordings are opt-in, encrypted at rest by the provider, deleted after 30 days by cron.
 
 ### 2.9 HTTP hardening (`next.config.ts` headers)
-- `Content-Security-Policy`: `default-src 'self'; script-src 'self' 'nonce-…' https://*.posthog.com; connect-src 'self' https://*.googleapis.com wss://*.googleapis.com https://*.posthog.com https://*.sentry.io https://<r2-bucket>; img-src 'self' data: blob: https://<r2-bucket>; media-src 'self' blob: https://<r2-bucket>; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`. Nonce generated in `proxy.ts`.
+- `Content-Security-Policy` (built in `server/security/headers.ts`, nonce generated in `proxy.ts`): strict nonce + `'strict-dynamic'` for scripts; `style-src 'self' 'unsafe-inline'` (React `style={}` attributes cannot carry a nonce, and a nonce would make browsers ignore `unsafe-inline`; scripts are the vector that matters); `connect-src`/`img-src`/`media-src` list each vendor explicitly (Firebase Auth, PostHog, Sentry, storage bucket, and legacy Vapi/Remotive until removed); `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'none'`. Rolled out as `Content-Security-Policy-Report-Only` first and flipped to enforce in its own PR after review (`CSP_MODE`).
 - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
 - `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: microphone=(self), camera=(self), geolocation=()`, `X-Frame-Options: DENY`.
-- Server actions: Next.js origin check enabled (`experimental.serverActions.allowedOrigins` limited to our domains).
+- Server actions: Next.js rejects cross-origin invocations by default (Origin vs Host); `serverActions.allowedOrigins` only widens that and is deliberately left unset.
 
 ### 2.10 Webhooks and cron
 - `/api/cron/*` requires `Authorization: Bearer ${CRON_SECRET}` compared with `timingSafeEqual`; called from GitHub Actions.
