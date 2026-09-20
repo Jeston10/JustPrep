@@ -323,7 +323,7 @@ Read these rows before starting the phase; link them in the PR that closes them.
 | P1.3 | R17 (`!=` + `orderBy` query) |
 | P1.4 | **R2 (open endpoints)**, R12 |
 | P1.5 | R3 (verify Upstash limits) |
-| P2.3 | R3 (Gemini/Groq limits), R24 (global daily caps), **R26 (valid Gemini key required)** |
+| P2.3 | R3 (Gemini/Groq limits), R24 (global daily caps), **R27 (model-availability contract test, 429 fallback)** |
 | P2.5 | **R8 (prod migration procedure)** |
 | P2.6 | R4 (R2 card check → Supabase fallback), R5 (never Firebase Storage), R9 (CSP domains) |
 | P3 start | **R10 (do not start before P2 exit)** |

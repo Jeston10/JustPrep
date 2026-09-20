@@ -59,35 +59,28 @@ End the conversation on a polite and positive note.
   },
 };
 
+export const FEEDBACK_CATEGORIES = [
+  "Communication Skills",
+  "Technical Knowledge",
+  "Problem Solving",
+  "Cultural Fit",
+  "Confidence and Clarity",
+] as const;
+
+// Structured-output schema. Deliberately a bounded array with an enum `name` rather than a tuple:
+// tuples compile to JSON Schema `items: [...]`, which Google's structured-output API rejects.
+// Moves to server/llm/schemas/feedback.ts in P2.3 (v2 with per-question scoring in P4.4).
 export const feedbackSchema = z.object({
-  totalScore: z.number(),
-  categoryScores: z.tuple([
-    z.object({
-      name: z.literal("Communication Skills"),
-      score: z.number(),
-      comment: z.string(),
-    }),
-    z.object({
-      name: z.literal("Technical Knowledge"),
-      score: z.number(),
-      comment: z.string(),
-    }),
-    z.object({
-      name: z.literal("Problem Solving"),
-      score: z.number(),
-      comment: z.string(),
-    }),
-    z.object({
-      name: z.literal("Cultural Fit"),
-      score: z.number(),
-      comment: z.string(),
-    }),
-    z.object({
-      name: z.literal("Confidence and Clarity"),
-      score: z.number(),
-      comment: z.string(),
-    }),
-  ]),
+  totalScore: z.number().min(0).max(100),
+  categoryScores: z
+    .array(
+      z.object({
+        name: z.enum(FEEDBACK_CATEGORIES),
+        score: z.number().min(0).max(100),
+        comment: z.string(),
+      }),
+    )
+    .length(FEEDBACK_CATEGORIES.length),
   strengths: z.array(z.string()),
   areasForImprovement: z.array(z.string()),
   finalAssessment: z.string(),

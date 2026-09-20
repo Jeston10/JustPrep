@@ -5,6 +5,7 @@ import { createGoogle } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
 
 import { env } from "@/config/env";
+import { GEMINI_FLASH_MODEL } from "@/config/llm";
 
 import { AppError } from "@/server/errors";
 import { opLogger } from "@/server/observability/logger";
@@ -56,7 +57,7 @@ export async function generateAndStoreFeedback(params: {
 
   const started = Date.now();
   const { output } = await generateText({
-    model: google("gemini-2.0-flash-001"),
+    model: google(GEMINI_FLASH_MODEL),
     output: Output.object({ schema: feedbackSchema }),
     system:
       "You are a professional interviewer analyzing a mock interview. Evaluate the candidate on structured categories.",
