@@ -19,6 +19,8 @@ import { auth } from "@/firebase/client";
 import FormField from "@/components/FormField";
 import { Button } from "@/components/ui/button";
 
+import { identifyUser } from "@/lib/observability/client";
+
 // One form component serves both modes; the shared schemas live in features/auth/schema.ts.
 const authFormSchema = (type: FormType) =>
   type === "sign-up" ? SignUpFormSchema : SignInFormSchema.extend({ name: z.string().optional() });
@@ -99,6 +101,8 @@ const AuthForm = ({ type }: { type: FormType }) => {
           toast.error(result.message);
           return;
         }
+
+        identifyUser(userCredentials.user.uid);
 
         toast.success("Signed in successfully.");
         router.push("/");

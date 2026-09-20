@@ -2,7 +2,8 @@
 
 import { requireUserChecked } from "@/server/auth/session";
 import { isAppError } from "@/server/errors";
-import { opLogger } from "@/server/observability/logger";
+import { captureServerEvent } from "@/server/observability/analytics";
+import { reportFailure } from "@/server/observability/report";
 import { uidKey } from "@/server/ratelimit/keys";
 import { enforceLimit } from "@/server/ratelimit/ratelimit";
 
@@ -22,10 +23,11 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
     }
     await enforceLimit("profile.update", uidKey(user.id));
     await getDb().collection("users").doc(user.id).update(parsed.data);
+    captureServerEvent("profile.updated", user.id);
     return { success: true, message: "Profile updated." };
   } catch (error) {
     if (isAppError(error)) return { success: false, message: error.message };
-    opLogger("profile.update").error({ err: error }, "profile update failed");
+    reportFailure("profile.update", error, "profile update failed");
     return { success: false, message: "Could not update your profile. Please try again." };
   }
 }

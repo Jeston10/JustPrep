@@ -9,6 +9,8 @@ import { signOut as signOutServer } from "@/features/auth/actions";
 
 import { auth } from "@/firebase/client";
 
+import { resetUser } from "@/lib/observability/client";
+
 export default function SettingsMenu() {
   const [open, setOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -22,6 +24,7 @@ export default function SettingsMenu() {
       // Server action clears the session cookie and revokes refresh tokens.
       const result = await signOutServer();
       if (!result.success) throw new Error("Failed to clear session");
+      resetUser();
       router.push("/sign-in");
       toast.success("Logged out successfully.");
     } catch {

@@ -1,7 +1,8 @@
 "use server";
 
-import { createSession, destroySession } from "@/server/auth/session";
+import { createSession, destroySession, getCurrentUser } from "@/server/auth/session";
 import { isAppError } from "@/server/errors";
+import { captureServerEvent } from "@/server/observability/analytics";
 import { opLogger } from "@/server/observability/logger";
 import { clientIpKey } from "@/server/ratelimit/keys";
 import { enforceLimit } from "@/server/ratelimit/ratelimit";
@@ -26,6 +27,7 @@ export async function signUp(input: unknown): Promise<ActionResult> {
       return { success: false, message: "User already exists. Please sign in." };
     }
     await users.set({ name: parsed.data.name, email: claims.email ?? "" });
+    captureServerEvent("user.signed_up", claims.uid);
     return { success: true, message: "Account created successfully. Please sign in." };
   } catch (error) {
     if (isAppError(error)) return { success: false, message: error.message };
@@ -43,6 +45,7 @@ export async function signIn(input: unknown): Promise<ActionResult> {
     const claims = await getAdminAuth().verifyIdToken(parsed.data.idToken);
     await createSession(parsed.data.idToken);
     await recordDailyLogin(claims.uid);
+    captureServerEvent("user.signed_in", claims.uid);
     return { success: true, message: "Signed in." };
   } catch (error) {
     if (isAppError(error)) return { success: false, message: error.message };
@@ -52,6 +55,8 @@ export async function signIn(input: unknown): Promise<ActionResult> {
 }
 
 export async function signOut(): Promise<ActionResult> {
+  const user = await getCurrentUser();
   await destroySession();
+  if (user) captureServerEvent("user.signed_out", user.id);
   return { success: true, message: "Signed out." };
 }

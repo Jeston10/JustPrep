@@ -9,6 +9,8 @@ vi.mock("@/server/auth/session", () => ({ requireUserChecked: () => requireUserC
 vi.mock("@/firebase/admin", () => ({
   getDb: () => ({ collection: () => ({ doc: () => ({ update }) }) }),
 }));
+vi.mock("@/server/observability/analytics", () => ({ captureServerEvent: vi.fn() }));
+vi.mock("@/server/observability/report", () => ({ reportFailure: vi.fn() }));
 vi.mock("@/server/observability/logger", () => ({
   opLogger: () => ({ error: vi.fn(), warn: vi.fn(), info: vi.fn() }),
 }));

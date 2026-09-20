@@ -83,8 +83,9 @@ Threat model, controls, and the checklist every PR touching the server must sati
 
 ### 2.11 Logging and privacy
 - `pino` with `redact: ['req.headers.cookie', 'req.headers.authorization', '*.email', '*.token', '*.transcript', '*.resumeText']`.
-- Sentry `beforeSend` strips request bodies and cookies; `sendDefaultPii: false`.
-- PostHog: identify by `uid` only; no email as a property; session replay masks all text inputs.
+- Sentry (`server/observability/sentry.ts`, `lib/observability/client.ts`): `sendDefaultPii: false`; `beforeSend` = `lib/observability/scrub.ts` (drops request bodies, cookies, query strings, credential headers, every user field except `id`; redacts sensitive keys in extra/contexts/breadcrumbs — unit-tested). Users are tagged by uid only. Errors only: no tracing, no session replay. Browser events travel through the same-origin `/api/monitoring` tunnel. CSP violations are reported to Sentry (`report-uri`, derived from the public DSN).
+- PostHog (`server/observability/analytics.ts`, `lib/observability/client.ts`): identify by `uid` only; event names and properties are typed in `config/analytics.ts` and personal keys (email, name, transcript, …) are dropped before sending; `autocapture` off, surveys off, Do-Not-Track honoured, `person_profiles: identified_only`, session replay masks all inputs and text. Browser traffic goes through the same-origin `/api/ingest` rewrite. Feature flags fall back to `config/flags.ts` when PostHog is unset, slow (> 800 ms), or unreachable.
+- `server/observability/report.ts` `reportFailure(op, error, message)` is the catch-all for unexpected failures: redacted log line + Sentry event tagged with the operation. Expected failures (bad input, rate limits) are not incidents and stay log-only.
 - Account deletion (`deleteAccount` action, re-auth required): deletes Auth user, all Firestore docs (batched), storage objects, Upstash keys, and requests PostHog/Sentry deletion. Data export produces a JSON zip of the same set.
 
 ### 2.12 Supply chain and CI
@@ -108,7 +109,7 @@ Threat model, controls, and the checklist every PR touching the server must sati
 
 | Endpoint | Reason | Protection |
 |---|---|---|
-| `GET /api/health` | Uptime checks | Returns `{ ok: true }` only; rate-limited by IP |
+| `GET /api/health` | Uptime checks | Returns `{ ok }` only (200/503); pings Redis when configured, cached 30 s; rate-limited by IP (`health` in `config/limits.ts`) |
 | `(marketing)` pages, `robots.ts`, `sitemap.ts` | Public | Static |
 | `POST` sign-in / sign-up actions | Bootstrap | IP rate limit, zod, Firebase brute-force protection; identity comes from a verified Firebase ID token |
 | `POST /api/vapi/generate` (legacy, until P4.6) | Called server-to-server by the Vapi workflow | Shared secret `x-vapi-secret` (constant-time compare), zod body, target user must exist; **disabled (503) unless `VAPI_WEBHOOK_SECRET` is set** |

@@ -11,10 +11,18 @@ import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/config/env";
 
 import { sessionCookieName } from "@/server/auth/session-core";
-import { CSP_HEADER_NAME, CSP_MODE, buildCsp, generateNonce } from "@/server/security/headers";
+import {
+  CSP_HEADER_NAME,
+  CSP_MODE,
+  buildCsp,
+  cspReportUriFromDsn,
+  generateNonce,
+} from "@/server/security/headers";
 
 const isDev = env.NODE_ENV === "development";
 const isProduction = env.NODE_ENV === "production";
+// CSP violations are reported to Sentry when a DSN is configured (RISKS R9 review loop).
+const cspReportUri = cspReportUriFromDsn(env.NEXT_PUBLIC_SENTRY_DSN);
 
 const PUBLIC_PATHS = new Set(["/sign-in", "/sign-up"]);
 
@@ -27,7 +35,7 @@ export function proxy(request: NextRequest) {
   }
 
   const nonce = generateNonce();
-  const csp = buildCsp({ nonce, isDev });
+  const csp = buildCsp({ nonce, isDev, reportUri: cspReportUri });
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
