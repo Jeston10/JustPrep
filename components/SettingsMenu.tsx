@@ -5,6 +5,8 @@ import { useState } from "react";
 import { FiLogOut, FiTrash2, FiSettings } from "react-icons/fi";
 import { toast } from "sonner";
 
+import { signOut as signOutServer } from "@/features/auth/actions";
+
 import { auth } from "@/firebase/client";
 
 export default function SettingsMenu() {
@@ -17,20 +19,11 @@ export default function SettingsMenu() {
       // Sign out from Firebase client
       await signOut(auth);
 
-      // Call server-side signOut to clear session cookie
-      const response = await fetch("/api/auth/signout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        router.push("/sign-in");
-        toast.success("Logged out successfully.");
-      } else {
-        throw new Error("Failed to clear session");
-      }
+      // Server action clears the session cookie and revokes refresh tokens.
+      const result = await signOutServer();
+      if (!result.success) throw new Error("Failed to clear session");
+      router.push("/sign-in");
+      toast.success("Logged out successfully.");
     } catch {
       toast.error("Failed to log out.");
     }

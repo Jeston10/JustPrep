@@ -10,7 +10,6 @@ import HomeAnalyticsSection from "@/components/HomeAnalyticsSection";
 import NewsSection from "@/components/NewsSection";
 import { Button } from "@/components/ui/button";
 
-import { recordDailyLogin } from "@/lib/actions/auth.action";
 import {
   getInterviewsByUserId,
   getLatestInterviews,
@@ -26,9 +25,6 @@ async function Home({ searchParams }: HomeProps) {
   if (!user) {
     redirect("/sign-in");
   }
-
-  // Record daily login when user visits the home page
-  await recordDailyLogin(user.id);
 
   const [userInterviews, allInterview, feedbacks] = await Promise.all([
     getInterviewsByUserId(user.id),

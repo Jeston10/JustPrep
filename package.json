@@ -23,7 +23,8 @@
     "prepare": "lefthook install",
     "dev:emulators": "cross-env NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 firebase emulators:exec --only auth,firestore --project demo-justprep \"pnpm seed:emulators && next dev\"",
     "seed:emulators": "tsx scripts/seed-emulator.ts",
-    "emulators": "firebase emulators:start --only auth,firestore --project demo-justprep"
+    "emulators": "firebase emulators:start --only auth,firestore --project demo-justprep",
+    "ops:revoke-all-sessions": "tsx scripts/revoke-all-sessions.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.71",

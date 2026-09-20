@@ -23,6 +23,8 @@ export default defineConfig({
             "lib/**/*.test.ts",
             "server/**/*.test.ts",
             "config/**/*.test.ts",
+            "features/**/*.test.ts",
+            "app/**/*.test.ts",
             "tests/unit/**/*.test.ts",
           ],
         },

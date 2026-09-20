@@ -21,6 +21,9 @@ export const env = createEnv({
     FIREBASE_CLIENT_EMAIL: z.email().trim().optional(),
     FIREBASE_PRIVATE_KEY: nonEmpty.transform((key) => key.replace(/\\n/g, "\n")).optional(),
 
+    // Vapi workflow webhook shared secret (legacy; removed in P4.6). Route is disabled when unset.
+    VAPI_WEBHOOK_SECRET: z.string().min(16).optional(),
+
     // Emulators (dev/CI). The Admin SDK honours these host variables natively.
     FIRESTORE_EMULATOR_HOST: nonEmpty.optional(),
     FIREBASE_AUTH_EMULATOR_HOST: nonEmpty.optional(),
@@ -55,6 +58,7 @@ export const env = createEnv({
     FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
     FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    VAPI_WEBHOOK_SECRET: process.env.VAPI_WEBHOOK_SECRET,
     FIRESTORE_EMULATOR_HOST: process.env.FIRESTORE_EMULATOR_HOST,
     FIREBASE_AUTH_EMULATOR_HOST: process.env.FIREBASE_AUTH_EMULATOR_HOST,
     NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST: process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST,

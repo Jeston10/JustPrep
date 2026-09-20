@@ -11,20 +11,17 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { signIn, signUp } from "@/features/auth/actions";
+import { PASSWORD_MIN, SignInFormSchema, SignUpFormSchema } from "@/features/auth/schema";
+
 import { auth } from "@/firebase/client";
 
 import FormField from "@/components/FormField";
 import { Button } from "@/components/ui/button";
 
-import { signIn, signUp } from "@/lib/actions/auth.action";
-
-const authFormSchema = (type: FormType) => {
-  return z.object({
-    name: type === "sign-up" ? z.string().min(3) : z.string().optional(),
-    email: z.email(),
-    password: z.string().min(3),
-  });
-};
+// One form component serves both modes; the shared schemas live in features/auth/schema.ts.
+const authFormSchema = (type: FormType) =>
+  type === "sign-up" ? SignUpFormSchema : SignInFormSchema.extend({ name: z.string().optional() });
 
 const AuthForm = ({ type }: { type: FormType }) => {
   const router = useRouter();
@@ -50,7 +47,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
       case "auth/invalid-email":
         return "Invalid email address.";
       case "auth/weak-password":
-        return "Password should be at least 6 characters long.";
+        return `Password should be at least ${PASSWORD_MIN} characters long.`;
       case "auth/email-already-in-use":
         return "An account with this email already exists.";
       case "auth/network-request-failed":
@@ -72,11 +69,10 @@ const AuthForm = ({ type }: { type: FormType }) => {
       if (type === "sign-up") {
         const { name, email, password } = values;
         const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+        // The server derives uid/email from the verified ID token, never from the client.
         const result = await signUp({
-          uid: userCredentials.user.uid,
+          idToken: await userCredentials.user.getIdToken(),
           name: name ?? "",
-          email: email,
-          password: password,
         });
 
         if (!result.success) {
@@ -98,10 +94,11 @@ const AuthForm = ({ type }: { type: FormType }) => {
           return;
         }
 
-        await signIn({
-          email,
-          idToken,
-        });
+        const result = await signIn({ idToken });
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
 
         toast.success("Signed in successfully.");
         router.push("/");

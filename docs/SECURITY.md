@@ -112,6 +112,7 @@ Threat model, controls, and the checklist every PR touching the server must sati
 |---|---|---|
 | `GET /api/health` | Uptime checks | Returns `{ ok: true }` only; rate-limited by IP |
 | `(marketing)` pages, `robots.ts`, `sitemap.ts` | Public | Static |
-| `POST` sign-in / sign-up actions | Bootstrap | IP rate limit, zod, Firebase brute-force protection |
+| `POST` sign-in / sign-up actions | Bootstrap | IP rate limit, zod, Firebase brute-force protection; identity comes from a verified Firebase ID token |
+| `POST /api/vapi/generate` (legacy, until P4.6) | Called server-to-server by the Vapi workflow | Shared secret `x-vapi-secret` (constant-time compare), zod body, target user must exist; **disabled (503) unless `VAPI_WEBHOOK_SECRET` is set** |
 
 Anything not in this table must authenticate.

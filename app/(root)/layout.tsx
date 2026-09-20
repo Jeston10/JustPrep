@@ -6,6 +6,7 @@ import { FaLinkedin, FaInstagram, FaGithub } from "react-icons/fa";
 import { FiHome, FiUser } from "react-icons/fi";
 
 import { getCurrentUser } from "@/server/auth/session";
+import { calendarDate, recordDailyLogin } from "@/server/services/streak.service";
 
 import AIChatbot from "@/components/AIChatbot";
 import DailyLoginStar from "@/components/DailyLoginStar";
@@ -13,25 +14,17 @@ import DynamicCareerQuote from "@/components/DynamicCareerQuote";
 import LiveDateTime from "@/components/LiveDateTime";
 import SettingsMenu from "@/components/SettingsMenu";
 
-import { hasLoggedInToday, getUserLoginStreak } from "@/lib/actions/auth.action";
-
 // Every route under (root) requires a session; the cookie is verified once per request
 // (React.cache) so pages below can call getCurrentUser() freely.
 const Rootlayout = async ({ children }: { children: ReactNode }) => {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in");
 
-  // Streak widget data (non-essential; removed in P3.5)
-  let initialHasLoggedInToday = false;
-  let initialStreak = 0;
-  try {
-    [initialHasLoggedInToday, initialStreak] = await Promise.all([
-      hasLoggedInToday(user.id),
-      getUserLoginStreak(user.id),
-    ]);
-  } catch {
-    // Render without streak data.
-  }
+  // First authenticated request of the day records the login (best-effort; no write when already
+  // recorded). Streak widget is removed in P3.5.
+  await recordDailyLogin(user.id);
+  const hasLoggedInToday = user.lastLoginDate === calendarDate(new Date());
+  const streak = user.loginStreak ?? 0;
 
   // Restore to simple layout
   return (
@@ -45,11 +38,7 @@ const Rootlayout = async ({ children }: { children: ReactNode }) => {
             <h2 className="text-primary-100">JustPrep</h2>
           </Link>
           {/* Daily Login Star next to JustPrep */}
-          <DailyLoginStar
-            userId={user.id}
-            initialHasLoggedInToday={initialHasLoggedInToday}
-            initialStreak={initialStreak}
-          />
+          <DailyLoginStar hasLoggedInToday={hasLoggedInToday} loginStreak={streak} />
           <DynamicCareerQuote />
         </div>
         <div className="mt-2 flex items-center gap-2">

@@ -3,6 +3,8 @@ import Image from "next/image";
 import { useState } from "react";
 import { FaStar, FaRegStar } from "react-icons/fa";
 
+import { updateProfile } from "@/features/profile/actions";
+
 import { Button } from "@/components/ui/button";
 
 export default function ProfileClient({
@@ -40,17 +42,12 @@ export default function ProfileClient({
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch("/api/profile/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, photoURL: profilePic }),
-      });
-      const data = (await res.json()) as { success: boolean; message?: string };
-      if (data.success) {
+      const result = await updateProfile({ description, photoURL: profilePic });
+      if (result.success) {
         setEditing(false);
         setSuccess("Profile updated!");
       } else {
-        setError(data.message ?? "Failed to update profile.");
+        setError(result.message);
       }
     } catch {
       setError("Failed to update profile.");
