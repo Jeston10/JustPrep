@@ -10,6 +10,7 @@ import { generateText } from "ai";
 import { z } from "zod";
 
 import { env } from "@/config/env";
+import { GEMINI_FLASH_MODEL } from "@/config/llm";
 
 import { opLogger } from "@/server/observability/logger";
 
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
 
   try {
     const { text } = await generateText({
-      model: google("gemini-2.0-flash-001"),
+      model: google(GEMINI_FLASH_MODEL),
       prompt: `Prepare questions for a job interview.
         The job role is ${role}.
         The job experience level is ${level}.
