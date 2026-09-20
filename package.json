@@ -31,6 +31,8 @@
     "@hookform/resolvers": "^5.9.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.13.11",
+    "@upstash/ratelimit": "^2.1.0",
+    "@upstash/redis": "^1.38.4",
     "@vapi-ai/web": "^2.3.5",
     "ai": "^7.0.102",
     "class-variance-authority": "^0.7.1",

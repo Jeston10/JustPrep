@@ -12,7 +12,7 @@ Every paid component of the original build is replaced here with a free alternat
 | Auth | Firebase Auth email/password | **Keep Firebase Auth** + Google OAuth provider (free). | Free, battle-tested; add OAuth in M4. |
 | File storage (photos, resumes, audio) | Firebase Storage (requires Blaze/card for new projects) | **Cloudflare R2** (10 GB free, S3-compatible) or **Supabase Storage** (1 GB free). Behind `ObjectStorage` interface. | Avoids card requirement. ADR-0004. |
 | Hosting | Vercel | **Vercel Hobby** (free, non-commercial). | Best Next.js DX; free. |
-| Rate limiting | none | **Upstash Redis** free tier + `@upstash/ratelimit`. | Serverless-safe; free tier ample for launch. |
+| Rate limiting | none | **Upstash Redis** free tier + `@upstash/ratelimit`. Verified 2026-09-20: 500,000 commands/month, 256 MB, 10 GB bandwidth, no card. | Serverless-safe; a sliding-window check costs ~2–3 commands, so only expensive/abusable operations are limited (`config/limits.ts`). |
 | Error monitoring | none | **Sentry** developer (free) tier. | Free for solo projects. |
 | Product analytics + feature flags | none | **PostHog** free tier (events + flags + session replay quota). | One vendor covers three needs. |
 | Logs | `console.log` | `pino` → Vercel runtime logs (free) ; optional **Axiom** free tier for retention. | Structured, redactable. |

@@ -41,14 +41,12 @@ Threat model, controls, and the checklist every PR touching the server must sati
 - Model output shown to users is rendered as text (no HTML/Markdown-to-HTML without sanitising).
 
 ### 2.5 Rate limiting and quotas
-- `server/ratelimit` (Upstash, sliding window). Keys: `ip` for anonymous, `uid` for authenticated. Defaults in `config/limits.ts`:
-  - sign-in / sign-up / reset: 10 per 10 min per IP
+- `server/ratelimit` (Upstash sliding window in production; in-memory fallback in dev/CI — production refuses to boot without Upstash). Keys: hashed `ip` for anonymous, `uid` for authenticated. Authoritative values live in `config/limits.ts`; current:
+  - sign-in / sign-up: 10 per 10 min per IP (reset: P3.4)
   - interview create: 5 per hour per user
-  - attempt start: 10 per hour per user
-  - feedback generate: 1 per attempt (idempotent), 10 per day per user
-  - upload: 5 per hour per user
-  - assistant chat: 30 per 10 min per user
-  - `/api/voice/session`: 5 per 10 min per user + global concurrency cap
+  - feedback generate: 10 per day per user (1 per attempt once attempts land in P2.5)
+  - profile update: 20 per hour per user
+  - later: attempt start 10/h, upload 5/h, assistant chat 30/10 min, `/api/voice/session` 5/10 min + global concurrency cap
 - Quotas (`server/services/quota.service.ts`) decrement `usage/{uid}/months/{m}` transactionally and refuse with `AppError('QUOTA_EXCEEDED')` and a UI that explains the reset time.
 
 ### 2.6 Secrets and configuration

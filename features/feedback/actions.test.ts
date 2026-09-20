@@ -12,6 +12,9 @@ vi.mock("@/server/services/feedback.service", () => ({
 vi.mock("@/server/observability/logger", () => ({
   opLogger: () => ({ error: vi.fn(), warn: vi.fn(), info: vi.fn() }),
 }));
+const enforceLimit = vi.fn<() => Promise<void>>(() => Promise.resolve());
+vi.mock("@/server/ratelimit/ratelimit", () => ({ enforceLimit: () => enforceLimit() }));
+vi.mock("@/server/ratelimit/keys", () => ({ uidKey: (uid: string) => `uid:${uid}` }));
 
 const { createFeedback } = await import("./actions");
 
@@ -23,6 +26,8 @@ const validInput = {
 beforeEach(() => {
   requireUser.mockReset();
   generateAndStoreFeedback.mockReset();
+  enforceLimit.mockReset();
+  enforceLimit.mockResolvedValue(undefined);
 });
 
 describe("createFeedback (SECURITY §3 checklist)", () => {
@@ -67,6 +72,16 @@ describe("createFeedback (SECURITY §3 checklist)", () => {
       success: false,
       message: "That interview no longer exists.",
     });
+  });
+
+  it("returns the rate-limit message and skips generation when over the limit", async () => {
+    requireUser.mockResolvedValue({ id: "u" });
+    enforceLimit.mockRejectedValue(
+      new AppError("RATE_LIMITED", "Too many requests. Try again in 2 min."),
+    );
+    const result = await createFeedback(validInput);
+    expect(result).toEqual({ success: false, message: "Too many requests. Try again in 2 min." });
+    expect(generateAndStoreFeedback).not.toHaveBeenCalled();
   });
 
   it("never leaks internal errors", async () => {

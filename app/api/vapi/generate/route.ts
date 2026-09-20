@@ -12,7 +12,10 @@ import { z } from "zod";
 import { env } from "@/config/env";
 import { GEMINI_FLASH_MODEL } from "@/config/llm";
 
+import { isAppError } from "@/server/errors";
 import { opLogger } from "@/server/observability/logger";
+import { uidKey } from "@/server/ratelimit/keys";
+import { enforceLimit } from "@/server/ratelimit/ratelimit";
 
 import { getDb } from "@/firebase/admin";
 
@@ -57,6 +60,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    await enforceLimit("interview.create", uidKey(userid));
     const { text } = await generateText({
       model: google(GEMINI_FLASH_MODEL),
       prompt: `Prepare questions for a job interview.
@@ -88,6 +92,9 @@ export async function POST(request: Request) {
 
     return Response.json({ success: true }, { status: 200 });
   } catch (error) {
+    if (isAppError(error) && error.code === "RATE_LIMITED") {
+      return Response.json({ success: false, message: error.message }, { status: 429 });
+    }
     log.error({ err: error }, "interview generation failed");
     return Response.json({ success: false }, { status: 500 });
   }

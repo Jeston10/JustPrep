@@ -3,6 +3,8 @@
 import { requireUserChecked } from "@/server/auth/session";
 import { isAppError } from "@/server/errors";
 import { opLogger } from "@/server/observability/logger";
+import { uidKey } from "@/server/ratelimit/keys";
+import { enforceLimit } from "@/server/ratelimit/ratelimit";
 
 import { getDb } from "@/firebase/admin";
 
@@ -18,6 +20,7 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
     if (!parsed.success) {
       return { success: false, message: parsed.error.issues[0]?.message ?? "Invalid profile." };
     }
+    await enforceLimit("profile.update", uidKey(user.id));
     await getDb().collection("users").doc(user.id).update(parsed.data);
     return { success: true, message: "Profile updated." };
   } catch (error) {

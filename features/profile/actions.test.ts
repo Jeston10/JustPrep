@@ -12,12 +12,17 @@ vi.mock("@/firebase/admin", () => ({
 vi.mock("@/server/observability/logger", () => ({
   opLogger: () => ({ error: vi.fn(), warn: vi.fn(), info: vi.fn() }),
 }));
+const enforceLimit = vi.fn<() => Promise<void>>(() => Promise.resolve());
+vi.mock("@/server/ratelimit/ratelimit", () => ({ enforceLimit: () => enforceLimit() }));
+vi.mock("@/server/ratelimit/keys", () => ({ uidKey: (uid: string) => `uid:${uid}` }));
 
 const { updateProfile } = await import("./actions");
 
 beforeEach(() => {
   requireUserChecked.mockReset();
   update.mockReset();
+  enforceLimit.mockReset();
+  enforceLimit.mockResolvedValue(undefined);
 });
 
 describe("updateProfile", () => {
@@ -41,6 +46,14 @@ describe("updateProfile", () => {
       description: "Frontend engineer",
       photoURL: "/profile.svg",
     });
+  });
+
+  it("does not write when the caller is rate limited", async () => {
+    requireUserChecked.mockResolvedValue({ id: "me" });
+    enforceLimit.mockRejectedValue(new AppError("RATE_LIMITED"));
+    const result = await updateProfile({ description: "x", photoURL: "/profile.svg" });
+    expect(result.success).toBe(false);
+    expect(update).not.toHaveBeenCalled();
   });
 
   it("rejects oversized descriptions and unsupported images", async () => {
