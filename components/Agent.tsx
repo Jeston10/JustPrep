@@ -6,9 +6,10 @@ import { useState, useEffect } from "react";
 
 import { env } from "@/config/env";
 
+import { createFeedback } from "@/features/feedback/actions";
+
 import { interviewer } from "@/constants";
 
-import { createFeedback } from "@/lib/actions/general.action";
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 
@@ -30,7 +31,6 @@ interface AgentProps {
   userId: string;
   type: "generate" | "interview";
   interviewId?: string | undefined;
-  feedbackId?: string | undefined;
   questions?: string[] | undefined;
 }
 
@@ -41,7 +41,7 @@ interface Message {
   transcript: string;
 }
 
-const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: AgentProps) => {
+const Agent = ({ userName, userId, interviewId, type, questions }: AgentProps) => {
   const router = useRouter();
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
@@ -112,14 +112,8 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
       transcript: SavedMessage[],
       targetInterviewId: string,
     ) => {
-      const { success, feedbackId: id } = await createFeedback({
-        interviewId: targetInterviewId,
-        userId,
-        transcript,
-        feedbackId,
-      });
-
-      router.push(success && id ? `/interview/${targetInterviewId}/feedback` : "/");
+      const result = await createFeedback({ interviewId: targetInterviewId, transcript });
+      router.push(result.success ? `/interview/${targetInterviewId}/feedback` : "/");
     };
 
     if (callStatus === CallStatus.FINISHED) {
@@ -129,7 +123,7 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
         void handleGenerateFeedback(messages, interviewId);
       }
     }
-  }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
+  }, [messages, callStatus, interviewId, router, type, userId]);
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
