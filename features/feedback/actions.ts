@@ -3,6 +3,8 @@
 import { requireUser } from "@/server/auth/session";
 import { isAppError } from "@/server/errors";
 import { opLogger } from "@/server/observability/logger";
+import { uidKey } from "@/server/ratelimit/keys";
+import { enforceLimit } from "@/server/ratelimit/ratelimit";
 import { generateAndStoreFeedback } from "@/server/services/feedback.service";
 
 import { CreateFeedbackSchema } from "./schema";
@@ -15,6 +17,7 @@ export async function createFeedback(input: unknown): Promise<CreateFeedbackResu
     const user = await requireUser();
     const parsed = CreateFeedbackSchema.safeParse(input);
     if (!parsed.success) return { success: false, message: "Invalid transcript." };
+    await enforceLimit("feedback.create", uidKey(user.id));
 
     const { feedbackId } = await generateAndStoreFeedback({
       interviewId: parsed.data.interviewId,

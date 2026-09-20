@@ -11,6 +11,8 @@ vi.mock("@/firebase/admin", () => ({
     collection: () => ({ doc: () => ({ get: () => Promise.resolve({ exists: false }) }) }),
   }),
 }));
+vi.mock("@/server/ratelimit/ratelimit", () => ({ enforceLimit: () => Promise.resolve() }));
+vi.mock("@/server/ratelimit/keys", () => ({ uidKey: (uid: string) => `uid:${uid}` }));
 vi.mock("@ai-sdk/google", () => ({ createGoogle: () => () => ({}) }));
 vi.mock("ai", () => ({ generateText: vi.fn() }));
 

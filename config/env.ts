@@ -24,6 +24,11 @@ export const env = createEnv({
     // Vapi workflow webhook shared secret (legacy; removed in P4.6). Route is disabled when unset.
     VAPI_WEBHOOK_SECRET: z.string().min(16).optional(),
 
+    // Upstash Redis (rate limiting, later quotas). Required in production (cross-field check below);
+    // dev/CI fall back to an in-memory limiter when unset.
+    UPSTASH_REDIS_REST_URL: z.url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: nonEmpty.optional(),
+
     // Emulators (dev/CI). The Admin SDK honours these host variables natively.
     FIRESTORE_EMULATOR_HOST: nonEmpty.optional(),
     FIREBASE_AUTH_EMULATOR_HOST: nonEmpty.optional(),
@@ -59,6 +64,8 @@ export const env = createEnv({
     FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     VAPI_WEBHOOK_SECRET: process.env.VAPI_WEBHOOK_SECRET,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     FIRESTORE_EMULATOR_HOST: process.env.FIRESTORE_EMULATOR_HOST,
     FIREBASE_AUTH_EMULATOR_HOST: process.env.FIREBASE_AUTH_EMULATOR_HOST,
     NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST: process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST,
@@ -90,5 +97,19 @@ if (
 ) {
   throw new Error(
     "FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY are required unless FIRESTORE_EMULATOR_HOST / FIREBASE_AUTH_EMULATOR_HOST are set.",
+  );
+}
+
+// Production must rate-limit across instances: the in-memory fallback is per-process only.
+// A production build running against the emulators (CI e2e) is not a deployment and may use it.
+if (
+  typeof window === "undefined" &&
+  process.env.SKIP_ENV_VALIDATION !== "1" &&
+  env.NODE_ENV === "production" &&
+  !usesFirebaseEmulators() &&
+  (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN)
+) {
+  throw new Error(
+    "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required in production.",
   );
 }
