@@ -1,6 +1,6 @@
 // One-off (RISKS R1): revoke refresh tokens for every user so session cookies issued before the
 // logging fix cannot be reused. Users simply sign in again. Run against production once after the
-// Phase 1 release: `pnpm exec tsx scripts/revoke-all-sessions.ts --confirm`
+// Phase 1 release: `pnpm ops:revoke-all-sessions -- --confirm`
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
