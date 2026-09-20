@@ -101,10 +101,12 @@ if (
 }
 
 // Production must rate-limit across instances: the in-memory fallback is per-process only.
+// A production build running against the emulators (CI e2e) is not a deployment and may use it.
 if (
   typeof window === "undefined" &&
   process.env.SKIP_ENV_VALIDATION !== "1" &&
   env.NODE_ENV === "production" &&
+  !usesFirebaseEmulators() &&
   (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN)
 ) {
   throw new Error(
