@@ -204,11 +204,13 @@ export default tseslint.config(
     },
   },
 
-  // Tests and scripts: relaxed unsafe-* rules for fixtures; vendor SDKs allowed in scripts.
+  // Tests and scripts: relaxed unsafe-* rules for fixtures; vendor SDKs allowed; they run outside
+  // the app with explicit environment (emulator hosts, CI variables), so process.env is permitted.
   {
     files: ["tests/**/*.{ts,tsx}", "**/*.test.{ts,tsx}", "scripts/**/*.ts"],
     rules: {
       "no-restricted-imports": "off",
+      "no-restricted-syntax": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
     },
