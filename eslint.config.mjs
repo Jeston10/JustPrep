@@ -191,6 +191,19 @@ export default tseslint.config(
     files: ["config/env.ts", "*.config.{ts,mts}"],
     rules: { "no-restricted-syntax": "off" },
   },
+  // next.config.ts wraps the build with Sentry's config plugin (build tooling, not app code).
+  {
+    files: ["next.config.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
+
+  // Browser observability: the Sentry SDK ships a separate browser build, so the client adapter
+  // (lib/observability/client.ts) and Next's fixed-name entry files import it directly. Nothing
+  // else may — components and features go through the adapter.
+  {
+    files: ["lib/observability/client.ts", "instrumentation-client.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
 
   // LEGACY allowances — each is deleted by the PR named. Do not add new entries.
   {

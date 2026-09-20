@@ -9,6 +9,8 @@ vi.mock("@/server/auth/session", () => ({ requireUser: () => requireUser() }));
 vi.mock("@/server/services/feedback.service", () => ({
   generateAndStoreFeedback: (params: unknown) => generateAndStoreFeedback(params),
 }));
+vi.mock("@/server/observability/analytics", () => ({ captureServerEvent: vi.fn() }));
+vi.mock("@/server/observability/report", () => ({ reportFailure: vi.fn() }));
 vi.mock("@/server/observability/logger", () => ({
   opLogger: () => ({ error: vi.fn(), warn: vi.fn(), info: vi.fn() }),
 }));

@@ -7,7 +7,12 @@
 // limited — never plain page views.
 
 export type LimitName =
-  "auth.signIn" | "auth.signUp" | "interview.create" | "feedback.create" | "profile.update";
+  | "auth.signIn"
+  | "auth.signUp"
+  | "interview.create"
+  | "feedback.create"
+  | "profile.update"
+  | "health";
 
 export interface LimitRule {
   /** Maximum requests allowed within `window`. */
@@ -24,4 +29,6 @@ export const LIMITS: Record<LimitName, LimitRule> = {
   "interview.create": { requests: 5, window: "1 h", keyBy: "uid" },
   "feedback.create": { requests: 10, window: "1 d", keyBy: "uid" },
   "profile.update": { requests: 20, window: "1 h", keyBy: "uid" },
+  // Uptime monitors poll every 1–5 min; anything faster is a scan or a misconfiguration.
+  health: { requests: 30, window: "1 m", keyBy: "ip" },
 };

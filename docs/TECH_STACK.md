@@ -13,8 +13,8 @@ Every paid component of the original build is replaced here with a free alternat
 | File storage (photos, resumes, audio) | Firebase Storage (requires Blaze/card for new projects) | **Cloudflare R2** (10 GB free, S3-compatible) or **Supabase Storage** (1 GB free). Behind `ObjectStorage` interface. | Avoids card requirement. ADR-0004. |
 | Hosting | Vercel | **Vercel Hobby** (free, non-commercial). | Best Next.js DX; free. |
 | Rate limiting | none | **Upstash Redis** free tier + `@upstash/ratelimit`. Verified 2026-09-20: 500,000 commands/month, 256 MB, 10 GB bandwidth, no card. | Serverless-safe; a sliding-window check costs ~2–3 commands, so only expensive/abusable operations are limited (`config/limits.ts`). |
-| Error monitoring | none | **Sentry** developer (free) tier. | Free for solo projects. |
-| Product analytics + feature flags | none | **PostHog** free tier (events + flags + session replay quota). | One vendor covers three needs. |
+| Error monitoring | none | **Sentry** developer tier. Verified 2026-09-20 (pricing page): 5,000 errors/month, 50 replays, 1 user, 30-day retention, no card. Errors only — tracing and replay are off (`server/observability/sentry.ts`, `lib/observability/client.ts`). | Free for solo projects; one seat is enough. |
+| Product analytics + feature flags | none | **PostHog** free tier. Verified 2026-09-20 (pricing page): 1M events, 1M flag requests, 5k session recordings, 100k exceptions/month; renews monthly; no card. | One vendor covers events, flags, and web vitals. |
 | Logs | `console.log` | `pino` → Vercel runtime logs (free) ; optional **Axiom** free tier for retention. | Structured, redactable. |
 | Email | none | **Resend** free tier (transactional only). | Simple API, free. |
 | News widget | GNews (key mismatch, mock data) | **Remove** the widget (filler). If kept: GNews free 100 req/day, cached with ISR 1 h. | Not core; see DESIGN_SYSTEM §7. |

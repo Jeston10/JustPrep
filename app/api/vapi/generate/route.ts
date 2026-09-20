@@ -13,7 +13,8 @@ import { env } from "@/config/env";
 import { GEMINI_FLASH_MODEL } from "@/config/llm";
 
 import { isAppError } from "@/server/errors";
-import { opLogger } from "@/server/observability/logger";
+import { captureServerEvent } from "@/server/observability/analytics";
+import { reportFailure } from "@/server/observability/report";
 import { uidKey } from "@/server/ratelimit/keys";
 import { enforceLimit } from "@/server/ratelimit/ratelimit";
 
@@ -43,7 +44,6 @@ const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === "string");
 
 export async function POST(request: Request) {
-  const log = opLogger("vapi.generate");
   const secret = env.VAPI_WEBHOOK_SECRET;
   if (!secret) return Response.json({ success: false }, { status: 503 });
   if (!secretMatches(request.headers.get("x-vapi-secret"), secret)) {
@@ -90,12 +90,13 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     });
 
+    captureServerEvent("interview.created", userid, { type, level, questions: questions.length });
     return Response.json({ success: true }, { status: 200 });
   } catch (error) {
     if (isAppError(error) && error.code === "RATE_LIMITED") {
       return Response.json({ success: false, message: error.message }, { status: 429 });
     }
-    log.error({ err: error }, "interview generation failed");
+    reportFailure("vapi.generate", error, "interview generation failed");
     return Response.json({ success: false }, { status: 500 });
   }
 }

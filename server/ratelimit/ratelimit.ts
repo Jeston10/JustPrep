@@ -2,11 +2,11 @@
 // an in-memory limiter for dev/CI/tests. Callers never touch the vendor SDK.
 
 import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { type Redis } from "@upstash/redis";
 
-import { env } from "@/config/env";
 import { LIMITS, type LimitName, type LimitRule } from "@/config/limits";
 
+import { getRedis } from "@/server/db/redis";
 import { AppError } from "@/server/errors";
 import { logger } from "@/server/observability/logger";
 
@@ -82,10 +82,9 @@ let instance: RateLimiter | undefined;
 /** Upstash when configured; otherwise in-memory (never in production — env.ts enforces that). */
 export const getRateLimiter = (): RateLimiter => {
   if (instance) return instance;
-  if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
-    instance = new UpstashRateLimiter(
-      new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }),
-    );
+  const redis = getRedis();
+  if (redis) {
+    instance = new UpstashRateLimiter(redis);
   } else {
     logger.warn({ op: "ratelimit.init" }, "Upstash not configured; using in-memory rate limiter");
     instance = new MemoryRateLimiter();
