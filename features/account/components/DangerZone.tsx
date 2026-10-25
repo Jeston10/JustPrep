@@ -84,14 +84,14 @@ export default function DangerZone({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       {/* A modal has to announce itself as one, and name itself by its heading: the menu that
           opened it stays mounted behind, so without this both it and the dialog look alike. */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="flex w-full max-w-md flex-col gap-5 border border-dark-300 bg-dark-200 p-6 sm:p-8"
+        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col gap-5 overflow-y-auto border border-dark-300 bg-dark-200 p-6 sm:p-8"
       >
         <div>
           <p className="text-xs tracking-[0.08em] text-light-400">DANGER ZONE</p>
