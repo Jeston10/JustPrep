@@ -18,7 +18,27 @@ export interface CspInput {
   nonce: string;
   isDev: boolean;
   mode?: CspMode;
+  /** Where browsers POST violation reports (Sentry, derived from the DSN). Omitted when unset. */
+  reportUri?: string | undefined;
 }
+
+/**
+ * Sentry accepts CSP violation reports at
+ * `https://o<org>.ingest.<region>.sentry.io/api/<project>/security/?sentry_key=<key>`; every part
+ * comes from the public DSN `https://<key>@o<org>.ingest.<region>.sentry.io/<project>`.
+ * Returns undefined for anything that is not a well-formed DSN so a typo never breaks the CSP.
+ */
+export const cspReportUriFromDsn = (dsn: string | undefined): string | undefined => {
+  if (!dsn) return undefined;
+  try {
+    const url = new URL(dsn);
+    const projectId = url.pathname.replace(/^\/+/, "");
+    if (url.protocol !== "https:" || !url.username || !/^\d+$/.test(projectId)) return undefined;
+    return `https://${url.host}/api/${projectId}/security/?sentry_key=${url.username}`;
+  } catch {
+    return undefined;
+  }
+};
 
 /**
  * Origins per vendor, kept explicit so a diff shows exactly which service gained network access.
@@ -26,6 +46,8 @@ export interface CspInput {
  */
 const ORIGINS = {
   firebaseAuth: ["https://*.googleapis.com", "wss://*.googleapis.com"],
+  // Sentry and PostHog talk to same-origin paths (/api/monitoring tunnel, /api/ingest rewrite —
+  // next.config.ts), so neither needs an entry here.
   // Vapi + its WebRTC transport (Daily). Removed in P4.6 (RISKS R12).
   vapi: ["https://api.vapi.ai", "wss://*.vapi.ai", "https://*.daily.co", "wss://*.daily.co"],
   // Remotive jobs widget, fetched from the browser. Removed in P3.5.
@@ -34,7 +56,7 @@ const ORIGINS = {
 
 const connectSrc = ["'self'", ...ORIGINS.firebaseAuth, ...ORIGINS.vapi, ...ORIGINS.remotive];
 
-export const buildCsp = ({ nonce, isDev, mode = CSP_MODE }: CspInput): string => {
+export const buildCsp = ({ nonce, isDev, mode = CSP_MODE, reportUri }: CspInput): string => {
   const directives = [
     "default-src 'self'",
     // 'strict-dynamic' lets nonce'd scripts load their own chunks; 'unsafe-eval' only for React's
@@ -57,6 +79,9 @@ export const buildCsp = ({ nonce, isDev, mode = CSP_MODE }: CspInput): string =>
     "frame-ancestors 'none'",
     // Ignored by browsers in report-only mode (and noisy in the console), so only when enforcing.
     ...(!isDev && mode === "enforce" ? ["upgrade-insecure-requests"] : []),
+    // Violations reach Sentry (RISKS R9): the review before flipping to enforce reads them there.
+    // `report-uri` is deprecated but universally supported; `report-to` needs a separate header.
+    ...(reportUri ? [`report-uri ${reportUri}`] : []),
   ];
   return directives.join("; ");
 };

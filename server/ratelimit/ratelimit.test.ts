@@ -4,7 +4,7 @@ import { LIMITS } from "@/config/limits";
 
 import { AppError } from "@/server/errors";
 
-vi.mock("@/config/env", () => ({ env: { NODE_ENV: "test" } }));
+vi.mock("@/server/db/redis", () => ({ getRedis: () => null }));
 vi.mock("@/server/observability/logger", () => ({ logger: { warn: vi.fn() } }));
 
 const { MemoryRateLimiter, enforceLimit } = await import("./ratelimit");

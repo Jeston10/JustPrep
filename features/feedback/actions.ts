@@ -2,7 +2,8 @@
 
 import { requireUser } from "@/server/auth/session";
 import { isAppError } from "@/server/errors";
-import { opLogger } from "@/server/observability/logger";
+import { captureServerEvent } from "@/server/observability/analytics";
+import { reportFailure } from "@/server/observability/report";
 import { uidKey } from "@/server/ratelimit/keys";
 import { enforceLimit } from "@/server/ratelimit/ratelimit";
 import { generateAndStoreFeedback } from "@/server/services/feedback.service";
@@ -24,10 +25,11 @@ export async function createFeedback(input: unknown): Promise<CreateFeedbackResu
       userId: user.id,
       transcript: parsed.data.transcript,
     });
+    captureServerEvent("feedback.created", user.id, { turns: parsed.data.transcript.length });
     return { success: true, feedbackId };
   } catch (error) {
     if (isAppError(error)) return { success: false, message: error.message };
-    opLogger("feedback.create").error({ err: error }, "feedback generation failed");
+    reportFailure("feedback.create", error, "feedback generation failed");
     return { success: false, message: "Could not generate feedback. Please try again." };
   }
 }

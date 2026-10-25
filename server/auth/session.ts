@@ -11,6 +11,7 @@ import { env } from "@/config/env";
 
 import { AppError } from "@/server/errors";
 import { logger } from "@/server/observability/logger";
+import { setSentryUser } from "@/server/observability/sentry";
 
 import { getAdminAuth, getDb } from "@/firebase/admin";
 
@@ -105,6 +106,7 @@ export async function destroySession(): Promise<void> {
 export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const claims = await readSession(await deps());
   if (!claims) return null;
+  setSentryUser(claims.uid);
   return loadUser(claims.uid);
 });
 

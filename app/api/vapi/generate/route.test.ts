@@ -5,6 +5,8 @@ const envState: { VAPI_WEBHOOK_SECRET?: string; GEMINI_API_KEY: string } = {
   GEMINI_API_KEY: "test",
 };
 vi.mock("@/config/env", () => ({ env: envState }));
+vi.mock("@/server/observability/analytics", () => ({ captureServerEvent: vi.fn() }));
+vi.mock("@/server/observability/report", () => ({ reportFailure: vi.fn() }));
 vi.mock("@/server/observability/logger", () => ({ opLogger: () => ({ error: vi.fn() }) }));
 vi.mock("@/firebase/admin", () => ({
   getDb: () => ({

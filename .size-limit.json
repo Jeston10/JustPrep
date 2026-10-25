@@ -1,8 +1,8 @@
 [
   {
-    "name": "client JS, all static chunks, gzip — ratchet: lower this as legacy code is removed (P3/P4); per-route budgets arrive with Lighthouse CI (P8.7)",
+    "name": "client JS, all static chunks, gzip — ratchet: 560 kB legacy app + 64 kB Sentry (eager) + 96 kB PostHog (idle-deferred), set in P1.6; lower this as legacy code is removed (P3/P4); per-route budgets arrive with Lighthouse CI (P8.7)",
     "path": ".next/static/chunks/**/*.js",
-    "limit": "560 kB",
+    "limit": "725 kB",
     "gzip": true
   }
 ]

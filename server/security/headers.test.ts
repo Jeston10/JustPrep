@@ -5,11 +5,19 @@ import {
   CSP_MODE,
   STATIC_SECURITY_HEADERS,
   buildCsp,
+  cspReportUriFromDsn,
   generateNonce,
 } from "./headers";
 
 describe("buildCsp (SECURITY §2.9)", () => {
   const nonce = "dGVzdA==";
+
+  it("adds a report-uri only when a report endpoint is given", () => {
+    expect(buildCsp({ nonce, isDev: false })).not.toContain("report-uri");
+    expect(buildCsp({ nonce, isDev: false, reportUri: "https://r.example/csp" })).toMatch(
+      /; report-uri https:\/\/r\.example\/csp$/,
+    );
+  });
 
   it("binds scripts to the per-request nonce and keeps styles same-origin", () => {
     const csp = buildCsp({ nonce, isDev: false });
@@ -80,5 +88,21 @@ describe("generateNonce", () => {
     expect(a).not.toBe(b);
     expect(a).toMatch(/^[A-Za-z0-9+/]+=*$/);
     expect(a.length).toBeGreaterThanOrEqual(24);
+  });
+});
+
+describe("cspReportUriFromDsn (RISKS R9)", () => {
+  it("derives Sentry's security endpoint from a public DSN", () => {
+    expect(cspReportUriFromDsn("https://abc123@o4507.ingest.us.sentry.io/4509")).toBe(
+      "https://o4507.ingest.us.sentry.io/api/4509/security/?sentry_key=abc123",
+    );
+  });
+
+  it("returns undefined for unset, malformed, or non-https values", () => {
+    expect(cspReportUriFromDsn(undefined)).toBeUndefined();
+    expect(cspReportUriFromDsn("not a url")).toBeUndefined();
+    expect(cspReportUriFromDsn("http://abc@o1.ingest.sentry.io/2")).toBeUndefined();
+    expect(cspReportUriFromDsn("https://o1.ingest.sentry.io/2")).toBeUndefined();
+    expect(cspReportUriFromDsn("https://abc@o1.ingest.sentry.io/not-a-project")).toBeUndefined();
   });
 });
