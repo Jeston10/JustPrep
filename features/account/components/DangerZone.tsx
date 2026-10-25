@@ -93,14 +93,14 @@ export default function DangerZone({ onClose }: { onClose: () => void }) {
         aria-labelledby={titleId}
         className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col gap-5 overflow-y-auto border border-dark-300 bg-dark-200 p-6 sm:p-8"
       >
-        <div>
+        <div className="shrink-0">
           <p className="text-xs tracking-[0.08em] text-light-400">DANGER ZONE</p>
           <h3 id={titleId} className="mt-1 text-xl font-semibold text-primary-100">
             Delete your account
           </h3>
         </div>
 
-        <p className="text-sm leading-relaxed text-light-100">
+        <p className="shrink-0 text-sm leading-relaxed text-light-100">
           This removes your profile, every interview you created, and all of their feedback. It
           cannot be undone. Download a copy first if you want to keep it.
         </p>
@@ -109,12 +109,12 @@ export default function DangerZone({ onClose }: { onClose: () => void }) {
           type="button"
           onClick={() => void handleExport()}
           disabled={busy !== null}
-          className="border border-primary-200 px-4 py-2 text-sm font-semibold text-primary-200 transition hover:bg-primary-200/10 disabled:opacity-50"
+          className="shrink-0 border border-primary-200 px-4 py-2 text-sm font-semibold text-primary-200 transition hover:bg-primary-200/10 disabled:opacity-50"
         >
           {busy === "export" ? "Preparing…" : "Download my data (JSON)"}
         </button>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex shrink-0 flex-col gap-2">
           <label htmlFor={confirmationId} className="text-sm text-light-100">
             Type <span className="font-semibold text-primary-100">{DELETE_CONFIRMATION}</span> to
             confirm
@@ -133,7 +133,7 @@ export default function DangerZone({ onClose }: { onClose: () => void }) {
           />
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex shrink-0 flex-col gap-2">
           <label htmlFor={passwordId} className="text-sm text-light-100">
             Confirm your password
           </label>
@@ -155,7 +155,7 @@ export default function DangerZone({ onClose }: { onClose: () => void }) {
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="sticky bottom-0 flex shrink-0 flex-col gap-3 bg-dark-200 pt-2 sm:flex-row">
           <button
             type="button"
             onClick={onClose}
