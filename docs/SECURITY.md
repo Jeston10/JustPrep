@@ -93,7 +93,14 @@ Threat model, controls, and the checklist every PR touching the server must sati
 - Lockfile committed; `pnpm install --frozen-lockfile` in CI.
 - No postinstall scripts from untrusted packages (`pnpm` `onlyBuiltDependencies` allow-list).
 - `knip` to remove unused deps (each is attack surface).
-- `pnpm.overrides` pins a patched version of a transitive package when the direct dependency has not shipped the fix yet. Each entry carries the advisory and the parent that pulls it in, and is removed once the parent catches up — a stopgap, never a standing fork of the tree.
+- `pnpm.overrides` pins a patched version of a transitive package when the direct dependency has not shipped the fix yet. Each entry is a stopgap, not a standing fork of the tree: it comes out as soon as the parent catches up, and it is listed here with its advisory so that is checkable.
+
+| Override | Pulled in by | Advisory it answers |
+|---|---|---|
+| `dompurify >=3.4.17` | `posthog-js` | GHSA-cg2g-xh64-v4q7 (critical, `SAFE_FOR_TEMPLATES` bypass), GHSA-mrv2-3pqr-j5jr (high) |
+| `@grpc/grpc-js >=1.14.5` | `firebase`, `firebase-admin`, `firebase-tools` | GHSA-m9gg-hp2v-232j (high, `getAuthContext` can return an unauthenticated context) |
+| `undici >=7.30.1` | `ai`, `@ai-sdk/google`, `firebase-tools` | GHSA-xjj6-f33q-929c (high, DoS), GHSA-f72v-6w45-q472 (SRI bypass) |
+| `source-map-js >=1.2.2` | `next`, `@tailwindcss/postcss`, `vitest` | GHSA-68fv-2mgg-jv7q (high, event-loop DoS) |
 
 ## 3. Server PR checklist
 
