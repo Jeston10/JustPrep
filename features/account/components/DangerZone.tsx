@@ -19,6 +19,7 @@ import { resetUser } from "@/lib/observability/client";
 
 export default function DangerZone({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const titleId = useId();
   const confirmationId = useId();
   const passwordId = useId();
   const [confirmation, setConfirmation] = useState("");
@@ -84,10 +85,19 @@ export default function DangerZone({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4">
-      <div className="flex w-full max-w-md flex-col gap-5 border border-dark-300 bg-dark-200 p-6 sm:p-8">
+      {/* A modal has to announce itself as one, and name itself by its heading: the menu that
+          opened it stays mounted behind, so without this both it and the dialog look alike. */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="flex w-full max-w-md flex-col gap-5 border border-dark-300 bg-dark-200 p-6 sm:p-8"
+      >
         <div>
           <p className="text-xs tracking-[0.08em] text-light-400">DANGER ZONE</p>
-          <h3 className="mt-1 text-xl font-semibold text-primary-100">Delete your account</h3>
+          <h3 id={titleId} className="mt-1 text-xl font-semibold text-primary-100">
+            Delete your account
+          </h3>
         </div>
 
         <p className="text-sm leading-relaxed text-light-100">

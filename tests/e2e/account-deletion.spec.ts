@@ -75,9 +75,11 @@ test("a user can delete their account, and their data goes with it", async ({
   // 4. Delete: Settings → Delete Account → type DELETE and re-enter the password.
   await page.getByRole("button", { name: /settings/i }).click();
   await page.getByRole("button", { name: /delete account/i }).click();
-  await page.getByLabel(/type DELETE to confirm/i).fill("DELETE");
-  await page.getByLabel(/confirm your password/i).fill(PASSWORD);
-  await page.getByRole("button", { name: /^delete account$/i }).click();
+  // The menu item that opened the dialog stays mounted behind it, so scope to the dialog.
+  const dialog = page.getByRole("dialog", { name: /delete your account/i });
+  await dialog.getByLabel(/type DELETE to confirm/i).fill("DELETE");
+  await dialog.getByLabel(/confirm your password/i).fill(PASSWORD);
+  await dialog.getByRole("button", { name: /^delete account$/i }).click();
 
   // 5. Signed out, and nothing is left behind.
   await expect(page).toHaveURL(/\/sign-in$/, { timeout: 20_000 });
