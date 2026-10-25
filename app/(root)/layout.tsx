@@ -30,7 +30,9 @@ const Rootlayout = async ({ children }: { children: ReactNode }) => {
   return (
     <div className="root-layout">
       <nav className="mb-8 flex flex-col items-center">
-        <div className="mb-2 flex w-full items-center gap-4">
+        {/* Wraps: at 375 px the quote cannot sit beside the clock, logo and star without
+            pushing the page wider than the screen (RESPONSIVE §5). */}
+        <div className="mb-2 flex w-full flex-wrap items-center gap-4">
           {/* Live DateTime at the very left */}
           <LiveDateTime />
           <Link href="/" className="flex items-center gap-2">

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { FiLogOut, FiTrash2, FiSettings } from "react-icons/fi";
 import { toast } from "sonner";
 
+import DangerZone from "@/features/account/components/DangerZone";
 import { signOut as signOutServer } from "@/features/auth/actions";
 
 import { auth } from "@/firebase/client";
@@ -30,12 +31,6 @@ export default function SettingsMenu() {
     } catch {
       toast.error("Failed to log out.");
     }
-  };
-
-  const handleDeleteAccount = () => {
-    setShowDeleteConfirm(false);
-    // TODO: Implement delete account logic
-    toast("Delete account feature coming soon.");
   };
 
   return (
@@ -72,34 +67,12 @@ export default function SettingsMenu() {
           </button>
         </div>
       )}
-      {/* Delete confirmation dialog */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="flex w-full max-w-sm animate-fadeIn flex-col items-center gap-6 rounded-2xl bg-white p-8 shadow-2xl dark:bg-dark-200">
-            <FiTrash2 className="mb-2 text-4xl text-red-600" />
-            <h3 className="text-xl font-bold text-red-600">Delete Account?</h3>
-            <p className="text-center text-gray-700 dark:text-primary-100">
-              This action is <b>permanent</b> and cannot be undone. Are you sure you want to delete
-              your account?
-            </p>
-            <div className="mt-2 flex w-full gap-4">
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                }}
-                className="dark:hover:bg-dark-400 flex-1 rounded-lg bg-gray-200 py-2 font-semibold text-gray-800 transition hover:bg-gray-300 dark:bg-dark-300 dark:text-primary-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                className="flex-1 rounded-lg bg-red-600 py-2 font-semibold text-white transition hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <DangerZone
+          onClose={() => {
+            setShowDeleteConfirm(false);
+          }}
+        />
       )}
     </div>
   );

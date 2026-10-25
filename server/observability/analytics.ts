@@ -110,3 +110,48 @@ export const isFlagEnabled = async (
     clearTimeout(timer);
   }
 };
+
+/**
+ * Right-to-erasure for analytics (SECURITY §2.11). PostHog's Persons API needs a personal API key
+ * and the project id — optional config — so this degrades to a log line that names the uid when
+ * they are absent. Never throws: the account is already deleted by the time it runs.
+ *
+ * Two calls: resolve the person by distinct_id (our uid), then delete it with its events.
+ */
+export const requestAnalyticsDeletion = async (
+  userId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<"deleted" | "not-found" | "skipped" | "failed"> => {
+  const apiKey = env.POSTHOG_PERSONAL_API_KEY;
+  const projectId = env.POSTHOG_PROJECT_ID;
+  if (!apiKey || !projectId) {
+    logger.warn(
+      { op: "analytics.erasure", userId },
+      "PostHog erasure not configured; delete this person manually",
+    );
+    return "skipped";
+  }
+
+  const base = `${env.NEXT_PUBLIC_POSTHOG_HOST.replace(".i.posthog.com", ".posthog.com")}/api/projects/${projectId}/persons`;
+  const headers = { Authorization: `Bearer ${apiKey}` };
+  try {
+    const lookup = await fetchImpl(`${base}/?distinct_id=${encodeURIComponent(userId)}`, {
+      headers,
+    });
+    if (!lookup.ok) throw new Error(`person lookup failed (${lookup.status})`);
+    const body = (await lookup.json()) as { results?: { id?: number | string }[] };
+    const personId = body.results?.[0]?.id;
+    if (personId === undefined) return "not-found";
+
+    const removal = await fetchImpl(
+      `${base}/${String(personId)}/?delete_events=true&delete_recordings=true`,
+      { method: "DELETE", headers },
+    );
+    if (!removal.ok) throw new Error(`person delete failed (${removal.status})`);
+    return "deleted";
+  } catch (error) {
+    // Logged with the uid so it can be erased by hand; the uid is not PII on its own.
+    logger.error({ op: "analytics.erasure", err: error, userId }, "PostHog erasure failed");
+    return "failed";
+  }
+};

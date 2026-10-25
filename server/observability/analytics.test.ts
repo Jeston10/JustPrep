@@ -2,9 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 
 import { FLAGS } from "@/config/flags";
 
-import { type AnalyticsClient, captureServerEvent, isFlagEnabled } from "./analytics";
+import {
+  type AnalyticsClient,
+  captureServerEvent,
+  isFlagEnabled,
+  requestAnalyticsDeletion,
+} from "./analytics";
 
-vi.mock("./logger", () => ({ logger: { info: vi.fn(), warn: vi.fn() } }));
+vi.mock("./logger", () => ({ logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
 // `after()` is only available inside a request; the adapter falls back to an inline flush.
 vi.mock("next/server", () => ({
   after: () => {
@@ -88,5 +93,17 @@ describe("isFlagEnabled (config/flags.ts fallbacks)", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("requestAnalyticsDeletion (right of erasure)", () => {
+  // Unit env has no PostHog credentials, so the adapter reports that it did nothing rather than
+  // pretending the person was erased.
+  it("reports 'skipped' and never calls the API when unconfigured", async () => {
+    const fetchImpl = vi.fn();
+    expect(await requestAnalyticsDeletion("uid1", fetchImpl as unknown as typeof fetch)).toBe(
+      "skipped",
+    );
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

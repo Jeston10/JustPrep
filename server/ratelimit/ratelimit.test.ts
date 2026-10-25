@@ -6,6 +6,12 @@ import { AppError } from "@/server/errors";
 
 vi.mock("@/server/db/redis", () => ({ getRedis: () => null }));
 vi.mock("@/server/observability/logger", () => ({ logger: { warn: vi.fn() } }));
+const reportFailure = vi.fn<() => void>();
+vi.mock("@/server/observability/report", () => ({
+  reportFailure: () => {
+    reportFailure();
+  },
+}));
 
 const { MemoryRateLimiter, enforceLimit } = await import("./ratelimit");
 
@@ -42,10 +48,23 @@ describe("MemoryRateLimiter (sliding window)", () => {
   });
 });
 
+describe("MemoryRateLimiter.reset", () => {
+  it("forgets an identifier's window (used when its account is deleted)", async () => {
+    const limiter = new MemoryRateLimiter(() => 1_000);
+    for (let i = 0; i < LIMITS["account.delete"].requests; i += 1) {
+      await limiter.limit("account.delete", "uid:gone");
+    }
+    expect((await limiter.limit("account.delete", "uid:gone")).success).toBe(false);
+    await limiter.reset("account.delete", "uid:gone");
+    expect((await limiter.limit("account.delete", "uid:gone")).success).toBe(true);
+  });
+});
+
 describe("enforceLimit", () => {
   it("throws AppError('RATE_LIMITED') with a reset time when denied", async () => {
     const limiter = {
       limit: () => Promise.resolve({ success: false, remaining: 0, reset: Date.now() + 90_000 }),
+      reset: () => Promise.resolve(),
     };
     await expect(enforceLimit("profile.update", "uid:u", limiter)).rejects.toMatchObject({
       code: "RATE_LIMITED",
@@ -59,8 +78,32 @@ describe("enforceLimit", () => {
     }
   });
 
+  // RISKS R28: a limiter outage must not take sign-in down, but it must not silently lift the cap.
+  it("degrades to a per-instance limit when the shared limiter is unreachable", async () => {
+    const broken = {
+      limit: () => Promise.reject(new Error("getaddrinfo ENOTFOUND upstash")),
+      reset: () => Promise.resolve(),
+    };
+    const identifier = `uid:degraded-${String(Math.random())}`;
+
+    // Still allowed, so the app keeps working...
+    await expect(enforceLimit("profile.update", identifier, broken)).resolves.toBeUndefined();
+    expect(reportFailure).toHaveBeenCalled();
+
+    // ...but the fallback still counts, so a flood is still stopped.
+    for (let i = 1; i < LIMITS["profile.update"].requests; i += 1) {
+      await enforceLimit("profile.update", identifier, broken);
+    }
+    await expect(enforceLimit("profile.update", identifier, broken)).rejects.toMatchObject({
+      code: "RATE_LIMITED",
+    });
+  });
+
   it("resolves silently when allowed", async () => {
-    const limiter = { limit: () => Promise.resolve({ success: true, remaining: 3, reset: 0 }) };
+    const limiter = {
+      limit: () => Promise.resolve({ success: true, remaining: 3, reset: 0 }),
+      reset: () => Promise.resolve(),
+    };
     await expect(enforceLimit("profile.update", "uid:u", limiter)).resolves.toBeUndefined();
   });
 });
