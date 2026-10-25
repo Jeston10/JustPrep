@@ -199,9 +199,14 @@ export default tseslint.config(
 
   // Browser observability: the Sentry SDK ships a separate browser build, so the client adapter
   // (lib/observability/client.ts) and Next's fixed-name entry files import it directly. Nothing
-  // else may — components and features go through the adapter.
+  // else may — components and features go through the adapter. privacy.ts is on the list for a
+  // type-only import (the SDK's option type); it ships no vendor code.
   {
-    files: ["lib/observability/client.ts", "instrumentation-client.ts"],
+    files: [
+      "lib/observability/client.ts",
+      "lib/observability/privacy.ts",
+      "instrumentation-client.ts",
+    ],
     rules: { "no-restricted-imports": "off" },
   },
 

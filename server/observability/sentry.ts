@@ -5,7 +5,7 @@
 //
 // Privacy posture, identical everywhere:
 //   - dormant without a DSN (dev, CI, forks): `enabled: false`, nothing leaves the process
-//   - `sendDefaultPii: false`: no IPs, cookies, or request bodies from the SDK itself
+//   - `dataCollection`: no IPs, cookies, headers, bodies, or locals from the SDK itself
 //   - `beforeSend: scrubEvent`: strips what our code or a framework integration might attach
 //   - users are identified by uid only (`setUser({ id })`), never by email
 
@@ -13,6 +13,7 @@ import * as Sentry from "@sentry/nextjs";
 
 import { deploymentEnvironment, env } from "@/config/env";
 
+import { NO_PII_DATA_COLLECTION } from "@/lib/observability/privacy";
 import { scrubEvent } from "@/lib/observability/scrub";
 
 export const initSentry = (): void => {
@@ -20,7 +21,7 @@ export const initSentry = (): void => {
     dsn: env.SENTRY_DSN,
     enabled: Boolean(env.SENTRY_DSN),
     environment: deploymentEnvironment(),
-    sendDefaultPii: false,
+    dataCollection: NO_PII_DATA_COLLECTION,
     // Errors only (no tracesSampleRate): tracing is compiled out in next.config.ts.
     beforeSend: (event) => scrubEvent(event),
   });
