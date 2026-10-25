@@ -7,6 +7,7 @@
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
 import { deleteAccount, exportData } from "@/features/account/actions";
@@ -83,7 +84,13 @@ export default function DangerZone({ onClose }: { onClose: () => void }) {
     }
   };
 
-  return (
+  // The menu that opens this dialog sits inside an animated header, and an animated or
+  // transformed ancestor makes `position: fixed` resolve against that ancestor instead of the
+  // viewport — at 375 px the panel hung off both edges. A portal to <body> settles it. The
+  // dialog only ever mounts from a click, so there is no server render to guard against.
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       {/* A modal has to announce itself as one, and name itself by its heading: the menu that
           opened it stays mounted behind, so without this both it and the dialog look alike. */}
@@ -174,6 +181,7 @@ export default function DangerZone({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
