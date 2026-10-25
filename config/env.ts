@@ -41,6 +41,11 @@ export const env = createEnv({
     // dev and CI never report. SENTRY_AUTH_TOKEN (source maps) is read by next.config.ts only.
     SENTRY_DSN: z.url().optional(),
 
+    // PostHog erasure (account deletion). The Persons API needs a personal API key and the
+    // numeric project id; without them a deletion is logged for manual follow-up instead.
+    POSTHOG_PERSONAL_API_KEY: nonEmpty.optional(),
+    POSTHOG_PROJECT_ID: nonEmpty.optional(),
+
     // Vercel sets this on every deployment; used to tag Sentry/PostHog with preview vs production.
     VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
     // Set by Next.js per server runtime; instrumentation.ts picks the matching Sentry entry.
@@ -81,6 +86,8 @@ export const env = createEnv({
     FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     SENTRY_DSN: process.env.SENTRY_DSN,
+    POSTHOG_PERSONAL_API_KEY: process.env.POSTHOG_PERSONAL_API_KEY,
+    POSTHOG_PROJECT_ID: process.env.POSTHOG_PROJECT_ID,
     VERCEL_ENV: process.env.VERCEL_ENV,
     NEXT_RUNTIME: process.env.NEXT_RUNTIME,
     VAPI_WEBHOOK_SECRET: process.env.VAPI_WEBHOOK_SECRET,

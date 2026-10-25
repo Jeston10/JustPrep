@@ -12,6 +12,8 @@ export type LimitName =
   | "interview.create"
   | "feedback.create"
   | "profile.update"
+  | "account.export"
+  | "account.delete"
   | "health";
 
 export interface LimitRule {
@@ -29,6 +31,10 @@ export const LIMITS: Record<LimitName, LimitRule> = {
   "interview.create": { requests: 5, window: "1 h", keyBy: "uid" },
   "feedback.create": { requests: 10, window: "1 d", keyBy: "uid" },
   "profile.update": { requests: 20, window: "1 h", keyBy: "uid" },
+  // Export reads every document a user owns; deletion is irreversible. Both are deliberate,
+  // rare actions — a low cap costs a real user nothing and stops scripted abuse.
+  "account.export": { requests: 3, window: "1 d", keyBy: "uid" },
+  "account.delete": { requests: 3, window: "1 h", keyBy: "uid" },
   // Uptime monitors poll every 1–5 min; anything faster is a scan or a misconfiguration.
   health: { requests: 30, window: "1 m", keyBy: "ip" },
 };

@@ -323,6 +323,8 @@ Read these rows before starting the phase; link them in the PR that closes them.
 | P1.3 | R17 (`!=` + `orderBy` query) |
 | P1.4 | **R2 (open endpoints)**, R12 |
 | P1.5 | R3 (verify Upstash limits) |
+| P1.6 | R9 (CSP reporting before the enforce flip), R3 (verify Sentry/PostHog limits) |
+| P1.7 | R22 (sensitive ops re-check revocation), **R28 (limiter outage must not take auth down)** |
 | P2.3 | R3 (Gemini/Groq limits), R24 (global daily caps), **R27 (model-availability contract test, 429 fallback)** |
 | P2.5 | **R8 (prod migration procedure)** |
 | P2.6 | R4 (R2 card check → Supabase fallback), R5 (never Firebase Storage), R9 (CSP domains) |

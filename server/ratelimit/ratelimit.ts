@@ -9,6 +9,7 @@ import { LIMITS, type LimitName, type LimitRule } from "@/config/limits";
 import { getRedis } from "@/server/db/redis";
 import { AppError } from "@/server/errors";
 import { logger } from "@/server/observability/logger";
+import { reportFailure } from "@/server/observability/report";
 
 export interface LimitDecision {
   success: boolean;
@@ -19,6 +20,8 @@ export interface LimitDecision {
 
 export interface RateLimiter {
   limit(name: LimitName, identifier: string): Promise<LimitDecision>;
+  /** Forgets an identifier's window. Used when the account behind it is deleted (SECURITY §2.11). */
+  reset(name: LimitName, identifier: string): Promise<void>;
 }
 
 const windowMs = (window: LimitRule["window"]): number => {
@@ -49,6 +52,11 @@ export class MemoryRateLimiter implements RateLimiter {
       reset: oldest + size,
     });
   }
+
+  reset(name: LimitName, identifier: string): Promise<void> {
+    this.hits.delete(`${name}:${identifier}`);
+    return Promise.resolve();
+  }
 }
 
 class UpstashRateLimiter implements RateLimiter {
@@ -75,6 +83,10 @@ class UpstashRateLimiter implements RateLimiter {
     const { success, remaining, reset } = await this.limiterFor(name).limit(identifier);
     return { success, remaining, reset };
   }
+
+  async reset(name: LimitName, identifier: string): Promise<void> {
+    await this.limiterFor(name).resetUsedTokens(identifier);
+  }
 }
 
 let instance: RateLimiter | undefined;
@@ -92,13 +104,42 @@ export const getRateLimiter = (): RateLimiter => {
   return instance;
 };
 
+/**
+ * Process-local limiter used when the shared one cannot be reached. One instance for the whole
+ * process so the degraded limit is still a limit (RISKS R28).
+ */
+let fallback: MemoryRateLimiter | undefined;
+
+/**
+ * Asks the configured limiter, degrading to the in-memory limiter if it throws (Upstash down,
+ * DNS failure, network blip). Rate limiting protects quota; it must not become the thing that
+ * takes sign-in down. The degradation is loud: logged and reported to Sentry every time.
+ */
+const decide = async (
+  name: LimitName,
+  identifier: string,
+  limiter: RateLimiter,
+): Promise<LimitDecision> => {
+  try {
+    return await limiter.limit(name, identifier);
+  } catch (error) {
+    reportFailure(
+      "ratelimit.unavailable",
+      error,
+      "rate limiter unreachable; limiting per-instance",
+    );
+    fallback ??= new MemoryRateLimiter();
+    return fallback.limit(name, identifier);
+  }
+};
+
 /** Throws AppError('RATE_LIMITED') carrying `resetAt` when the caller is over the limit. */
 export async function enforceLimit(
   name: LimitName,
   identifier: string,
   limiter: RateLimiter = getRateLimiter(),
 ): Promise<void> {
-  const decision = await limiter.limit(name, identifier);
+  const decision = await decide(name, identifier, limiter);
   if (decision.success) return;
   const resetAt = new Date(decision.reset);
   const seconds = Math.max(1, Math.ceil((decision.reset - Date.now()) / 1000));
