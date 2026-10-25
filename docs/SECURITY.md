@@ -83,7 +83,7 @@ Threat model, controls, and the checklist every PR touching the server must sati
 
 ### 2.11 Logging and privacy
 - `pino` with `redact: ['req.headers.cookie', 'req.headers.authorization', '*.email', '*.token', '*.transcript', '*.resumeText']`.
-- Sentry (`server/observability/sentry.ts`, `lib/observability/client.ts`): `sendDefaultPii: false`; `beforeSend` = `lib/observability/scrub.ts` (drops request bodies, cookies, query strings, credential headers, every user field except `id`; redacts sensitive keys in extra/contexts/breadcrumbs — unit-tested). Users are tagged by uid only. Errors only: no tracing, no session replay. Browser events travel through the same-origin `/api/monitoring` tunnel. CSP violations are reported to Sentry (`report-uri`, derived from the public DSN).
+- Sentry (`server/observability/sentry.ts`, `lib/observability/client.ts`): `dataCollection: NO_PII_DATA_COLLECTION` (`lib/observability/privacy.ts`) — every category off (user info, cookies, headers, bodies, query params, stack-frame locals, DB and queue payloads). **This has to stay explicit**: Sentry v11 removed `sendDefaultPii` and the replacement defaults every field to *collect*, so an omitted option silently starts sending PII; a unit test fails if a category is dropped. `beforeSend` = `lib/observability/scrub.ts` (drops request bodies, cookies, query strings, credential headers, every user field except `id`; redacts sensitive keys in extra/contexts/breadcrumbs — unit-tested). Users are tagged by uid only. Errors only: no tracing, no session replay. Browser events travel through the same-origin `/api/monitoring` tunnel. CSP violations are reported to Sentry (`report-uri`, derived from the public DSN).
 - PostHog (`server/observability/analytics.ts`, `lib/observability/client.ts`): identify by `uid` only; event names and properties are typed in `config/analytics.ts` and personal keys (email, name, transcript, …) are dropped before sending; `autocapture` off, surveys off, Do-Not-Track honoured, `person_profiles: identified_only`, session replay masks all inputs and text. Browser traffic goes through the same-origin `/api/ingest` rewrite. Feature flags fall back to `config/flags.ts` when PostHog is unset, slow (> 800 ms), or unreachable.
 - `server/observability/report.ts` `reportFailure(op, error, message)` is the catch-all for unexpected failures: redacted log line + Sentry event tagged with the operation. Expected failures (bad input, rate limits) are not incidents and stay log-only.
 - Account deletion (`deleteAccount` action, re-auth required): deletes Auth user, all Firestore docs (batched), storage objects, Upstash keys, and requests PostHog/Sentry deletion. Data export produces a JSON zip of the same set.
@@ -93,6 +93,7 @@ Threat model, controls, and the checklist every PR touching the server must sati
 - Lockfile committed; `pnpm install --frozen-lockfile` in CI.
 - No postinstall scripts from untrusted packages (`pnpm` `onlyBuiltDependencies` allow-list).
 - `knip` to remove unused deps (each is attack surface).
+- `pnpm.overrides` pins a patched version of a transitive package when the direct dependency has not shipped the fix yet. Each entry carries the advisory and the parent that pulls it in, and is removed once the parent catches up — a stopgap, never a standing fork of the tree.
 
 ## 3. Server PR checklist
 

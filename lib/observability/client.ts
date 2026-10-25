@@ -12,6 +12,7 @@ import * as Sentry from "@sentry/nextjs";
 
 import { env } from "@/config/env";
 
+import { NO_PII_DATA_COLLECTION } from "./privacy";
 import { scrubEvent } from "./scrub";
 
 import type { PostHog } from "posthog-js";
@@ -62,7 +63,7 @@ export const initClientObservability = (): void => {
     dsn: env.NEXT_PUBLIC_SENTRY_DSN,
     enabled: Boolean(env.NEXT_PUBLIC_SENTRY_DSN),
     // environment: the SDK reads NEXT_PUBLIC_VERCEL_ENV itself; server vars are not readable here.
-    sendDefaultPii: false,
+    dataCollection: NO_PII_DATA_COLLECTION,
     // Session replay is deliberately off: the developer tier allows 50 per month.
     integrations: [],
     beforeSend: (event) => scrubEvent(event),
