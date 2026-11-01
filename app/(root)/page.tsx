@@ -3,18 +3,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/server/auth/session";
+import {
+  getInterviewsByUserId,
+  getLatestInterviews,
+  getUserFeedbackForPast5Days,
+} from "@/server/services/interview.service";
 
 import AllInterviewsSection from "@/components/AllInterviewsSection";
 import HighPayingJobsSection from "@/components/HighPayingJobsSection";
 import HomeAnalyticsSection from "@/components/HomeAnalyticsSection";
 import NewsSection from "@/components/NewsSection";
 import { Button } from "@/components/ui/button";
-
-import {
-  getInterviewsByUserId,
-  getLatestInterviews,
-  getUserFeedbackForPast5Days,
-} from "@/lib/actions/general.action";
 
 interface HomeProps {
   searchParams: Promise<{ page?: string }>;
@@ -33,7 +32,7 @@ async function Home({ searchParams }: HomeProps) {
   ]);
 
   // Combine both interview arrays and remove duplicates
-  const combinedInterviews = [...(userInterviews ?? []), ...(allInterview ?? [])];
+  const combinedInterviews = [...userInterviews, ...allInterview];
   const uniqueInterviews = combinedInterviews.filter(
     (interview, index, self) => index === self.findIndex((i) => i.id === interview.id),
   );
@@ -93,8 +92,8 @@ async function Home({ searchParams }: HomeProps) {
 
           {/* All Interviews Section */}
           <AllInterviewsSection
-            userInterviews={userInterviews ?? []}
-            allInterviews={allInterview ?? []}
+            userInterviews={userInterviews}
+            allInterviews={allInterview}
             userId={user.id}
             currentPage={validCurrentPage}
             totalPages={totalPages}
