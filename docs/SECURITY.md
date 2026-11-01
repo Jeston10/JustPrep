@@ -102,6 +102,7 @@ Threat model, controls, and the checklist every PR touching the server must sati
 | `@grpc/grpc-js >=1.14.5` | `firebase`, `firebase-admin`, `firebase-tools` | GHSA-m9gg-hp2v-232j (high, `getAuthContext` can return an unauthenticated context) |
 | `undici >=7.30.1` | `ai`, `@ai-sdk/google`, `firebase-tools` | GHSA-xjj6-f33q-929c (high, DoS), GHSA-f72v-6w45-q472 (SRI bypass) |
 | `source-map-js >=1.2.2` | `next`, `@tailwindcss/postcss`, `vitest` | GHSA-68fv-2mgg-jv7q (high, event-loop DoS) |
+| `re2js >=2.8.7` | `firebase` → `@firebase/firestore` | GHSA-gg6h-894w-4m9c (high, quadratic-time DoS in lookbehind matching); drops out when we take `firebase` 13 in P2.2 |
 
 ## 3. Server PR checklist
 
@@ -120,6 +121,7 @@ Threat model, controls, and the checklist every PR touching the server must sati
 |---|---|---|
 | `GET /api/health` | Uptime checks | Returns `{ ok }` only (200/503); pings Redis when configured, cached 30 s; rate-limited by IP (`health` in `config/limits.ts`) |
 | `(marketing)` pages, `robots.ts`, `sitemap.ts` | Public | Static |
+| `GET /api/news` (legacy stub, until P3.5) | The dashboard widget still fetches it | Returns a constant empty list; reads nothing and takes no input |
 | `POST` sign-in / sign-up actions | Bootstrap | IP rate limit, zod, Firebase brute-force protection; identity comes from a verified Firebase ID token |
 | `POST /api/vapi/generate` (legacy, until P4.6) | Called server-to-server by the Vapi workflow | Shared secret `x-vapi-secret` (constant-time compare), zod body, target user must exist; **disabled (503) unless `VAPI_WEBHOOK_SECRET` is set** |
 

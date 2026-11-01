@@ -143,6 +143,7 @@ Every file in the repo today, where it ends up, and when. "Delete" means removed
 | 1.5 | `security/rate-limiting` | `server/ratelimit/`, `config/limits.ts`, applied to sign-in/up actions, `createFeedback`, `updateProfile`, `/api/vapi/generate` | Upstash free DB; keys `rl:{name}:{uid|ip}` | Unit test with in-memory limiter fake; manual burst test returns `RATE_LIMITED` |
 | 1.6 | `security/observability` | `@sentry/nextjs` (PII off, `beforeSend` scrub), `posthog-js`/`posthog-node` (identify by uid, mask inputs), `config/flags.ts`, `app/api/health/route.ts`, `server/observability/analytics.ts` with typed event names | Sentry + PostHog free projects | Health returns `{ok:true}`; a test error appears in Sentry without cookies; one event in PostHog |
 | 1.7 | `feat/account-deletion-export` | `server/services/account.service.ts` (`deleteAccount` with re-auth token, batched Firestore delete, storage later, analytics deletion request; `exportData` JSON), `DangerZone` wired into `SettingsMenu`; profile page reads no N+1 (temporary: single aggregate query; permanent in P2.5) | Re-auth via fresh ID token from client | E2E: create user → delete → sign-in fails, docs gone (emulator) |
+| 1.8 | `security/close-legacy-actions` | Delete `lib/actions/general.action.ts` (file-level `"use server"` on five unauthenticated reads); move them to `server/services/interview.service.ts` with `server-only`; document `/api/news` in SECURITY §4 | P1 exit audit of every server entry point | Ownership unit tests; hygiene test fails on any `"use server"` outside `features/*/actions.ts` |
 
 **Exit criteria:** SECURITY §3 checklist true for every server entry point; SECURITY §4 table matches reality; `v0.3.0`.
 
@@ -325,6 +326,7 @@ Read these rows before starting the phase; link them in the PR that closes them.
 | P1.5 | R3 (verify Upstash limits) |
 | P1.6 | R9 (CSP reporting before the enforce flip), R3 (verify Sentry/PostHog limits) |
 | P1.7 | R22 (sensitive ops re-check revocation), **R28 (limiter outage must not take auth down)**, R29 (dev server logs action arguments, ID tokens included) |
+| P1.8 | **R30 (legacy module exposed five unauthenticated reads as server actions)** |
 | P2.3 | R3 (Gemini/Groq limits), R24 (global daily caps), **R27 (model-availability contract test, 429 fallback)** |
 | P2.5 | **R8 (prod migration procedure)** |
 | P2.6 | R4 (R2 card check → Supabase fallback), R5 (never Firebase Storage), R9 (CSP domains) |

@@ -4,10 +4,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/server/auth/session";
+import { getFeedbackByInterviewId, getInterviewById } from "@/server/services/interview.service";
 
 import { Button } from "@/components/ui/button";
-
-import { getFeedbackByInterviewId, getInterviewById } from "@/lib/actions/general.action";
 
 const Feedback = async ({ params }: RouteParams<{ id: string }>) => {
   const { id } = await params;

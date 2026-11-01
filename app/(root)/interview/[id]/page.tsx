@@ -2,11 +2,11 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/server/auth/session";
+import { getInterviewById } from "@/server/services/interview.service";
 
 import Agent from "@/components/Agent";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
 
-import { getInterviewById } from "@/lib/actions/general.action";
 import { getRandomInterviewCover } from "@/lib/utils";
 
 const InterviewDetails = async ({ params }: RouteParams<{ id: string }>) => {
